@@ -1,0 +1,131 @@
+.access-requests {
+  width: 100%;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--color-border);
+  text-align: left;
+}
+
+.access-requests-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.access-requests-title {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.count-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: var(--radius-pill);
+  background: var(--color-highlight);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.access-requests-empty {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.access-request-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.access-request {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+  animation: rise-in 300ms var(--ease-out) both;
+}
+
+.access-request-person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.access-request-photo {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.access-request .avatar {
+  width: 36px;
+  height: 36px;
+  background: var(--color-surface);
+}
+
+.access-request-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.access-request-google-name,
+.access-request-email {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.access-request-google-name {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.access-request-email {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.access-request .form-error {
+  margin-top: 0;
+}
+
+.access-request-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.access-request-actions .button {
+  flex: 1;
+  min-height: 44px;
+  font-size: 15px;
+}
+
+/* The row is grey, so the secondary button needs a white fill to show. */
+.access-request .button-secondary {
+  background: var(--color-surface);
+}
+
+.access-approved {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(52, 199, 89, 0.12);
+  color: var(--color-positive);
+  font-size: 14px;
+  font-weight: 600;
+  animation: rise-in 300ms var(--ease-out) both;
+}

@@ -1,0 +1,163 @@
+rules_version = '2';
+
+// Kadalacurry Firestore security rules.
+// Paste into Firebase Console → Firestore Database → Rules, then Publish.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- Helpers ----------
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // users/{uid} is created by the admin. Its existence is what approves an account.
+    function isApproved() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function isAdmin() {
+      return isApproved()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'admin';
+    }
+
+    function changedKeys() {
+      return request.resource.data.diff(resource.data).affectedKeys();
+    }
+
+    // ---------- Approved accounts (source of truth for balances) ----------
+
+    match /users/{uid} {
+      // Anyone may check their own approval; approved roommates can read each other.
+      allow get: if isSelf(uid) || isApproved();
+
+      // Approving or removing roommates is done by the admin (or in the console).
+      allow create, delete: if isAdmin();
+
+      allow update: if
+        // Saving your own meal order changes your own balance.
+        (isSelf(uid)
+          && changedKeys().hasOnly(['outstandingBalance'])
+          && request.resource.data.outstandingBalance is number)
+        // Settling the household bill resets every roommate's balance to zero.
+        || (isApproved()
+          && changedKeys().hasOnly(['outstandingBalance'])
+          && request.resource.data.outstandingBalance == 0)
+        || isAdmin();
+    }
+
+    // ---------- Shared roommate profiles (name + mirrored balance) ----------
+
+    match /roommates/{uid} {
+      allow read: if isApproved();
+
+      // Created by the roommate on first login, or by the admin when approving them.
+      allow create: if (isSelf(uid) || isAdmin()) && isApproved()
+        && request.resource.data.keys().hasOnly(['name', 'outstandingBalance'])
+        && request.resource.data.name is string
+        && request.resource.data.outstandingBalance is number;
+
+      allow update: if isApproved() && (
+        (isSelf(uid)
+          && changedKeys().hasOnly(['name', 'outstandingBalance'])
+          && request.resource.data.outstandingBalance is number)
+        // Settling the household bill.
+        || (changedKeys().hasOnly(['outstandingBalance'])
+          && request.resource.data.outstandingBalance == 0)
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // ---------- Meal orders: dailyOrders/{YYYY-MM-DD}_{uid} ----------
+
+    match /dailyOrders/{orderId} {
+      function isValidOrder() {
+        let order = request.resource.data;
+        return order.userId == request.auth.uid
+          && orderId == order.deliveryDate + '_' + request.auth.uid
+          && order.breakfast is bool
+          && order.lunch is bool
+          && order.amount is number;
+      }
+
+      allow read: if isApproved();
+      allow create: if isApproved() && isValidOrder();
+      allow update: if isApproved()
+        && resource.data.userId == request.auth.uid
+        && isValidOrder();
+      allow delete: if false;
+    }
+
+    // ---------- Debts between two roommates: debts/{uidA}_{uidB}, ids sorted ----------
+    // `amount` is what users[0] owes users[1]; negative means the reverse.
+
+    match /debts/{pairId} {
+      function isValidDebt() {
+        let debt = request.resource.data;
+        return debt.users is list
+          && debt.users.size() == 2
+          && debt.users[0] < debt.users[1]
+          && pairId == debt.users[0] + '_' + debt.users[1]
+          && request.auth.uid in debt.users
+          && debt.amount is number;
+      }
+
+      // Only the two roommates involved can see a debt. (resource is null when
+      // a transaction reads a pair that doesn't exist yet.)
+      allow get: if isApproved()
+        && (resource == null || request.auth.uid in resource.data.users);
+      allow list: if isApproved() && request.auth.uid in resource.data.users;
+
+      allow create, update: if isApproved() && isValidDebt();
+      allow delete: if false;
+    }
+
+    // ---------- Payment history (append-only) ----------
+
+    match /settlements/{settlementId} {
+      allow read: if isApproved();
+
+      allow create: if isApproved()
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.kind in ['bill', 'repayment']
+        && request.resource.data.amount is number
+        && request.resource.data.amount > 0
+        && request.resource.data.createdAt == request.time;
+
+      allow update, delete: if false;
+    }
+
+    // ---------- Access requests: people who signed in but aren't approved yet ----------
+
+    match /accessRequests/{uid} {
+      // You can only leave (or refresh) a request for your own Google account.
+      allow create, update: if isSelf(uid)
+        && request.resource.data.keys().hasOnly(['name', 'email', 'photoURL', 'requestedAt'])
+        && request.resource.data.requestedAt == request.time;
+
+      // Only the admin sees requests, and approves or declines them.
+      allow read, delete: if isAdmin();
+    }
+
+    // ---------- Vendor board: public numbers for the meal vendor (vendor.html) ----------
+    // Only totals live here (meal counts per day and the house's total due), no names.
+
+    match /vendorBoard/{boardId} {
+      // Anyone with the link can read it, without signing in.
+      allow read: if true;
+
+      // The roommates' apps keep it up to date.
+      allow write: if isApproved()
+        && boardId == 'current'
+        && request.resource.data.keys().hasOnly(['totalDue', 'days', 'updatedAt'])
+        && request.resource.data.totalDue is number
+        && request.resource.data.days is map;
+    }
+  }
+}

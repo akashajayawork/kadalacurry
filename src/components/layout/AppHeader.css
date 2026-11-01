@@ -1,0 +1,71 @@
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  padding-top: var(--safe-top);
+  background: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+}
+
+.app-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: var(--content-width);
+  height: var(--header-height);
+  margin: 0 auto;
+  padding: 0 var(--page-padding);
+}
+
+.app-header-avatar {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  transition: transform 160ms var(--ease-out);
+}
+
+.app-header-avatar:active {
+  transform: scale(0.92);
+}
+
+/* Count of people waiting for access (admin only). */
+.app-header-badge {
+  position: absolute;
+  top: -5px;
+  right: -6px;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  border: 2px solid var(--color-bg);
+  border-radius: var(--radius-pill);
+  background: var(--color-highlight);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 15px;
+  text-align: center;
+  animation: pop 420ms var(--ease-spring);
+}
+
+.account-sheet {
+  display: flex;
+  flex-direction: column;
+}
+
+.account-sheet-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.account-sheet-name {
+  margin-top: 6px;
+  font-size: 19px;
+  font-weight: 700;
+}

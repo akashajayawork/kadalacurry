@@ -1,0 +1,203 @@
+.accounts {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-top: 12px;
+}
+
+.accounts-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.accounts-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.accounts-empty {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px;
+  font-size: 15px;
+  color: var(--color-text-secondary);
+}
+
+/* Total due */
+
+.total-due {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 22px;
+}
+
+.total-due-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.total-due-amount {
+  margin-top: 6px;
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.total-due-caption {
+  margin-top: 10px;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.due-breakdown li,
+.settle-preview li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  font-size: 15px;
+}
+
+.due-breakdown li + li,
+.settle-preview li + li {
+  border-top: 1px solid var(--color-border);
+}
+
+.due-breakdown-name,
+.settle-preview-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.due-breakdown-amount,
+.settle-preview-amount {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Settle dialogs */
+
+.settle-preview {
+  margin-top: 14px;
+  padding: 2px 14px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+}
+
+.settle-preview .avatar {
+  background: var(--color-surface);
+}
+
+.settle-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding-top: 8px;
+  text-align: center;
+}
+
+.settle-success .dialog-title {
+  margin-top: 14px;
+  padding-right: 0;
+}
+
+.settle-success .dialog-actions {
+  width: 100%;
+}
+
+/* Who owes who */
+
+.debt-list,
+.history-list {
+  overflow: hidden;
+}
+
+.debt-list li + li,
+.history-row + .history-row {
+  border-top: 1px solid var(--color-border);
+}
+
+.debt-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 12px 14px 16px;
+  text-align: left;
+  transition: background-color 150ms ease;
+}
+
+.debt-row:active {
+  background: var(--color-surface-muted);
+}
+
+.debt-row-text,
+.history-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.debt-row-title,
+.history-title {
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.debt-row-hint,
+.history-meta {
+  font-size: 13px;
+  color: var(--color-text-tertiary);
+}
+
+.debt-row-amount {
+  font-size: 17px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.debt-row-chevron {
+  flex-shrink: 0;
+  color: var(--color-text-tertiary);
+}
+
+/* Payment history */
+
+.history-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+}
+
+.history-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: var(--color-surface-muted);
+}
+
+.history-amount {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}

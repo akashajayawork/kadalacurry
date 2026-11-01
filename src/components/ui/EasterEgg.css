@@ -1,0 +1,18 @@
+.easter-egg {
+  flex-shrink: 0;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* White image backgrounds (e.g. JPGs) blend into the page instead of showing as a box. */
+img.easter-egg {
+  mix-blend-mode: multiply;
+}
+
+.easter-egg-placeholder {
+  display: inline-block;
+  border: 1.5px dashed rgba(0, 0, 0, 0.14);
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.015);
+}

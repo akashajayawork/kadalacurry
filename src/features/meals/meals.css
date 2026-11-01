@@ -1,0 +1,464 @@
+.home {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Greeting */
+
+.greeting {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 12px;
+}
+
+/* Due */
+
+.due-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 22px;
+}
+
+.due-card-amount {
+  margin-top: 6px;
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.due-card-note {
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Meals */
+
+.meals {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.meals-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.meals-date {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.meal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Today / Tomorrow switch */
+
+.segmented {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-muted);
+}
+
+.segmented-thumb {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc(50% - 3px);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.12),
+    0 1px 1px rgba(0, 0, 0, 0.04);
+  transform: translateX(calc(var(--active-index) * 100%));
+  transition: transform 320ms var(--ease-out);
+}
+
+.segmented-option {
+  position: relative;
+  z-index: 1;
+  height: 36px;
+  border-radius: var(--radius-pill);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  transition: color 200ms ease;
+}
+
+.segmented-option.is-active {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+/* Meal card */
+
+.meal-card {
+  transition:
+    border-color 250ms ease,
+    box-shadow 250ms ease;
+}
+
+.meal-card.is-selected {
+  border-color: var(--color-primary);
+  box-shadow:
+    0 0 0 1px var(--color-primary),
+    var(--shadow-card);
+}
+
+.meal-card-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px 10px 6px;
+}
+
+.meal-card-summary {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px;
+  border-radius: var(--radius-md);
+  text-align: left;
+  transition: background-color 150ms ease;
+}
+
+.meal-card-summary:active {
+  background: var(--color-surface-muted);
+}
+
+.meal-card-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: var(--color-surface-muted);
+}
+
+.meal-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.meal-card-name {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.meal-card-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.meal-card-chevron {
+  transition: transform 250ms var(--ease-out);
+}
+
+.meal-card-chevron.is-open {
+  transform: rotate(180deg);
+}
+
+/* Dropdown: animates height via grid rows. */
+.meal-card-orders {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 300ms var(--ease-out);
+}
+
+.meal-card-orders.is-open {
+  grid-template-rows: 1fr;
+}
+
+.meal-card-orders-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.orderers {
+  margin: 0 16px 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.orderer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  font-size: 15px;
+}
+
+.orderer + .orderer {
+  border-top: 1px solid var(--color-border);
+}
+
+.orderer-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.orderer-tag {
+  margin-left: auto;
+  padding: 2px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-muted);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.orderers-empty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 16px;
+  padding: 12px 0 16px;
+  border-top: 1px solid var(--color-border);
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+/* Add button */
+
+.add-meal {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 6px;
+  height: 40px;
+  padding: 0 16px 0 12px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-muted);
+  font-size: 15px;
+  font-weight: 600;
+  transition:
+    background-color 200ms ease,
+    color 200ms ease,
+    transform 150ms var(--ease-out);
+}
+
+.add-meal:active {
+  transform: scale(0.94);
+}
+
+.add-meal.is-added {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.add-meal-icon {
+  display: inline-flex;
+}
+
+.add-meal.is-celebrating {
+  animation: pop 420ms var(--ease-spring);
+}
+
+.add-meal.is-celebrating .add-meal-icon {
+  animation: icon-in 300ms var(--ease-spring);
+}
+
+.add-meal-ring {
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-pill);
+  pointer-events: none;
+  animation: ring-out 600ms var(--ease-out) forwards;
+}
+
+.add-meal-float {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-positive);
+  white-space: nowrap;
+  pointer-events: none;
+  animation: float-up 1000ms var(--ease-out) forwards;
+}
+
+@keyframes ring-out {
+  from {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.45);
+  }
+}
+
+/* Rise in, hold so it can be read, then drift off. */
+@keyframes float-up {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  65% {
+    opacity: 1;
+    transform: translate(-50%, -14px);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -24px);
+  }
+}
+
+/* "Already paid" popup */
+
+.paid-notice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding-top: 6px;
+  text-align: center;
+}
+
+.paid-notice-icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 10px;
+  border-radius: 50%;
+  background: var(--color-surface-muted);
+  animation: pop 420ms var(--ease-spring);
+}
+
+.paid-notice .dialog-title {
+  padding-right: 0;
+}
+
+.paid-notice .dialog-actions {
+  width: 100%;
+}
+
+/* Save bar */
+
+.save-bar {
+  position: sticky;
+  bottom: calc(var(--nav-height) + var(--safe-bottom) + 12px);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
+  padding: 10px 10px 10px 20px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: var(--shadow-card);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  transition: box-shadow 250ms ease;
+}
+
+.save-bar.is-dirty {
+  box-shadow: var(--shadow-float);
+}
+
+.save-bar-summary {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.save-bar-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+/* Orange dot = unsaved changes. */
+.save-bar.is-dirty .save-bar-label::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-highlight);
+}
+
+.save-bar-total {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.save-button {
+  min-width: 136px;
+}
+
+.save-button.is-saved {
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+}
+
+.save-button-check {
+  display: inline-flex;
+}
+
+.save-button.is-celebrating .save-button-check {
+  animation: icon-in 320ms var(--ease-spring);
+}
+
+.save-bar-egg {
+  position: absolute;
+  right: 28px;
+  bottom: calc(100% + 6px);
+  animation: egg-pop 1800ms var(--ease-out) forwards;
+}
+
+@keyframes egg-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.6);
+  }
+  15%,
+  75% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}

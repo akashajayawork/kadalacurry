@@ -1,0 +1,44 @@
+.confetti {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 2;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.confetti-piece {
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 2px;
+  background: var(--color);
+  opacity: 0;
+  animation: confetti-burst 780ms var(--ease-out) var(--delay) forwards;
+}
+
+.confetti-piece:nth-child(3n) {
+  border-radius: 50%;
+}
+
+.confetti-piece:nth-child(3n + 1) {
+  width: 4px;
+  height: 9px;
+}
+
+@keyframes confetti-burst {
+  0% {
+    opacity: 1;
+    transform: rotate(var(--angle)) translateY(0) scale(0.6);
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(var(--angle)) translateY(calc(-1 * var(--distance))) rotate(140deg) scale(1);
+  }
+}

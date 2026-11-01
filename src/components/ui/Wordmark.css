@@ -1,0 +1,10 @@
+.wordmark {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--color-text);
+}
+
+.wordmark-dot {
+  color: var(--color-highlight);
+}

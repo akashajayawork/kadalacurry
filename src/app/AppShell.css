@@ -1,0 +1,37 @@
+.app-shell {
+  min-height: 100svh;
+}
+
+.app-content {
+  /* Fill the screen so swipes work anywhere, even on short pages. */
+  min-height: calc(100svh - var(--header-height) - var(--safe-top));
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: 8px var(--page-padding) calc(var(--nav-height) + var(--safe-bottom) + 32px);
+  /* Vertical scrolling stays native; horizontal swipes switch tabs. */
+  touch-action: pan-y pinch-zoom;
+}
+
+/* `backwards` (not `both`) so the page stops being its own layer once it has
+   slid in; otherwise easter-egg images can't blend with the page background. */
+.app-page-forward {
+  animation: page-in-forward 320ms var(--ease-out) backwards;
+}
+
+.app-page-back {
+  animation: page-in-back 320ms var(--ease-out) backwards;
+}
+
+@keyframes page-in-forward {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+}
+
+@keyframes page-in-back {
+  from {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+}

@@ -10,8 +10,8 @@ export function LoginScreen({ onSignIn }: LoginScreenProps) {
   return (
     <AuthCard>
       <EasterEgg slot="login" />
-      <h1 className="auth-title">Your shared kitchen, made simple.</h1>
-      <p className="auth-text">Order meals, split the bill and stay square with your roommates.</p>
+      <h1 className="auth-title">Shared meal planner</h1>
+      <p className="auth-text">Order meals, split the bill and stay square</p>
       <button type="button" className="button button-primary button-block" onClick={onSignIn}>
         Continue with Google
       </button>

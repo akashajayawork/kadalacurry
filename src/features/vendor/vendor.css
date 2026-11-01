@@ -9,14 +9,29 @@
 }
 
 .vendor-header {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 8px 0 12px;
+  padding: 8px 0 4px;
 }
 
-.vendor-date {
-  font-size: 17px;
+.vendor-day {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.vendor-day-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.vendor-day-date {
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0;
   color: var(--color-text-secondary);
 }
 
@@ -44,9 +59,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  aspect-ratio: 1;
-  padding: 18px;
+  gap: 8px;
+  /* A little wider than tall, so both days fit on one phone screen. */
+  aspect-ratio: 5 / 4;
+  padding: 16px;
   text-align: center;
 }
 
@@ -57,7 +73,7 @@
 }
 
 .vendor-meal-count {
-  font-size: 76px;
+  font-size: 64px;
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.04em;

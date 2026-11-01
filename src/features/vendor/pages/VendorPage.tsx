@@ -7,13 +7,17 @@ import { addDays, formatDateId, formatLongDate } from "@/utils/date";
 import { useVendorBoard } from "../hooks/useVendorBoard";
 import "../vendor.css";
 
-/** Public page for the meal vendor (no sign-in): the house's due and tomorrow's meal counts. */
+/** Shown top to bottom: today first, then tomorrow. */
+const DAYS = [
+  { label: "Today", offset: 0 },
+  { label: "Tomorrow", offset: 1 },
+] as const;
+
+/** Public page for the meal vendor (no sign-in): the house's due and today's and tomorrow's meal counts. */
 export function VendorPage() {
   const now = useNow();
   const { board, status } = useVendorBoard();
 
-  const tomorrow = addDays(now, 1);
-  const counts = board?.days[formatDateId(tomorrow)];
   // No board yet is "no numbers", not zero: never show the vendor a false 0.
   const isReady = status === "ready" && board !== null;
 
@@ -21,7 +25,6 @@ export function VendorPage() {
     <main className="vendor">
       <header className="vendor-header">
         <Wordmark />
-        <p className="vendor-date">Tomorrow · {formatLongDate(tomorrow)}</p>
       </header>
 
       <section className="vendor-due card" aria-label="Due">
@@ -29,14 +32,28 @@ export function VendorPage() {
         <p className="vendor-due-amount">{isReady ? formatRupees(board?.totalDue ?? 0) : "–"}</p>
       </section>
 
-      <div className="vendor-meals">
-        {MEALS.map((meal) => (
-          <section key={meal} className="vendor-meal card" aria-label={MEAL_LABELS[meal]}>
-            <p className="vendor-meal-label">{MEAL_LABELS[meal]}</p>
-            <p className="vendor-meal-count">{isReady ? (counts?.[meal] ?? 0) : "–"}</p>
+      {DAYS.map(({ label, offset }) => {
+        const date = addDays(now, offset);
+        const counts = board?.days[formatDateId(date)];
+
+        return (
+          <section key={label} className="vendor-day" aria-label={label}>
+            <h2 className="vendor-day-title">
+              {label}
+              <span className="vendor-day-date">{formatLongDate(date)}</span>
+            </h2>
+
+            <div className="vendor-meals">
+              {MEALS.map((meal) => (
+                <div key={meal} className="vendor-meal card">
+                  <p className="vendor-meal-label">{MEAL_LABELS[meal]}</p>
+                  <p className="vendor-meal-count">{isReady ? (counts?.[meal] ?? 0) : "–"}</p>
+                </div>
+              ))}
+            </div>
           </section>
-        ))}
-      </div>
+        );
+      })}
 
       {status === "ready" && board === null && (
         <p className="vendor-note">

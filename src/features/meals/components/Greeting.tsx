@@ -10,7 +10,7 @@ export function Greeting({ name }: GreetingProps) {
     <section className="greeting">
       <div>
         <h1 className="page-title">Yo, {getFirstName(name)}!</h1>
-        <p className="page-subtitle">What's cooking today?</p>
+        <p className="page-subtitle">What we eating today?</p>
       </div>
       <EasterEgg slot="home-greeting" />
     </section>

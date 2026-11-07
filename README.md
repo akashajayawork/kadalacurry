@@ -8,7 +8,7 @@ Shared meal ordering and expense tracking for roommates. Mobile-first React + Ty
 cp .env.example .env.local   # fill in your Firebase web config
 npm install
 npm run dev                  # the app
-npm run dev:demo             # the demo, at http://localhost:5173/demo/
+npm run dev:demo             # the demo, at http://localhost:5174/demo/ (can run alongside)
 ```
 
 ## Demo

@@ -1,8 +1,9 @@
 .demo-banner {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px 12px;
   padding: calc(8px + var(--safe-top)) var(--page-padding) 8px;
   background: var(--color-primary);
   color: var(--color-on-primary);
@@ -13,10 +14,15 @@
   color: var(--color-highlight);
 }
 
-.demo-banner-restart {
+.demo-banner-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 6px;
+}
+
+.demo-banner-button {
   display: inline-flex;
   align-items: center;
-  flex-shrink: 0;
   gap: 6px;
   height: 28px;
   padding: 0 12px;
@@ -26,8 +32,23 @@
   font-weight: 600;
 }
 
-.demo-banner-restart:active {
+.demo-banner-button:active {
   transform: scale(0.95);
+}
+
+/* Its own line, so it never squeezes the text. Empty (no link set) collapses. */
+.demo-banner-coffee {
+  display: flex;
+  width: 100%;
+}
+
+.demo-banner-coffee:empty {
+  display: none;
+}
+
+.demo-banner .coffee-link.is-placeholder {
+  border-color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.75);
 }
 
 /* Welcome dialog */
@@ -43,4 +64,14 @@
 
 .demo-welcome .field {
   margin-top: 20px;
+}
+
+.demo-welcome-coffee {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.demo-welcome-coffee:empty {
+  display: none;
 }

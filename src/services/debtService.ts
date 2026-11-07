@@ -1,21 +1,23 @@
-import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { onSnapshot, query, where } from "firebase/firestore";
 
-import { db } from "@/config/firebase";
-import { COLLECTIONS } from "@/constants/firestore";
+import { ROOM_COLLECTIONS } from "@/constants/firestore";
 import type { Debt } from "@/types";
 import { toDebt, type DebtRecord } from "@/utils/debtPairs";
 
-// Debts live at debts/{uidA}_{uidB}; the pair maths is shared with the demo.
+import { roomCollection } from "./refs";
+
+// Debts live at rooms/{roomId}/debts/{uidA}_{uidB}; the pair maths is shared with the demo.
 export { getDebtId, getDebtPair, getPairAmountChange, toDebt } from "@/utils/debtPairs";
 
 /** Real-time list of the user's non-zero debts with other roommates. */
 export function subscribeToDebts(
+  roomId: string,
   uid: string,
   onChange: (debts: Debt[]) => void,
   onError?: (error: Error) => void
 ) {
   return onSnapshot(
-    query(collection(db, COLLECTIONS.debts), where("users", "array-contains", uid)),
+    query(roomCollection(roomId, ROOM_COLLECTIONS.debts), where("users", "array-contains", uid)),
     (snapshot) => {
       onChange(
         snapshot.docs

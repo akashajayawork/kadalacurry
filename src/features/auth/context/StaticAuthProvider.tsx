@@ -1,27 +1,25 @@
 import { useMemo, type PropsWithChildren } from "react";
 
-import type { AppUser } from "@/types";
+import type { GoogleAccount } from "@/types";
 
 import { AuthContext, type AuthContextValue } from "./AuthContext";
 
 type StaticAuthProviderProps = PropsWithChildren<{
-  user: AppUser;
-  isAdmin?: boolean;
+  account: GoogleAccount;
   onSignOut: () => void;
 }>;
 
-/** A fixed, already-approved session without Google sign-in (used by the demo). */
-export function StaticAuthProvider({ user, isAdmin = false, onSignOut, children }: StaticAuthProviderProps) {
+/** A fixed signed-in session without Google sign-in (used by the demo). */
+export function StaticAuthProvider({ account, onSignOut, children }: StaticAuthProviderProps) {
   const value = useMemo<AuthContextValue>(
     () => ({
-      status: "approved",
-      user,
-      isAdmin,
-      error: "",
+      status: "signed-in",
+      account,
+      isMainAdmin: false,
       signIn: async () => {},
       signOut: async () => onSignOut(),
     }),
-    [user, isAdmin, onSignOut]
+    [account, onSignOut]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

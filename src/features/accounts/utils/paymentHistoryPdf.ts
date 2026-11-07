@@ -1,7 +1,7 @@
 import type { RowInput } from "jspdf-autotable";
 
 import { APP_NAME } from "@/constants/app";
-import type { Settlement } from "@/types";
+import type { PaymentMethod, Settlement } from "@/types";
 import { formatDateId, formatFullDate, formatTime, parseDateId } from "@/utils/date";
 
 type Rgb = [number, number, number];
@@ -17,6 +17,12 @@ function pdfText(text: string): string {
   return text.replace(/[^\S\n]+/g, " ").replace(/[^\n\x20-\x7e\xa1-\xff]/g, "?");
 }
 
+const PAID_VIA: Record<PaymentMethod, string> = {
+  gpay: "Paid with Google Pay",
+  upi: "Paid by UPI",
+  other: "Paid another way",
+};
+
 const pdfAmount = (amount: number) => `Rs. ${amount.toLocaleString("en-IN")}`;
 
 const sumAmounts = (settlements: Settlement[]) =>
@@ -26,7 +32,10 @@ function describe(settlement: Settlement): [title: string, details: string] {
   if (settlement.kind === "bill") {
     return [
       `${settlement.paidByName} paid the meal bill`,
-      settlement.shares.map((share) => `${share.name}: ${pdfAmount(share.amount)}`).join("\n"),
+      [
+        ...settlement.shares.map((share) => `${share.name}: ${pdfAmount(share.amount)}`),
+        ...(settlement.paidVia ? [PAID_VIA[settlement.paidVia]] : []),
+      ].join("\n"),
     ];
   }
 
@@ -49,7 +58,10 @@ function groupByDay(settlements: Settlement[]): Map<string, Settlement[]> {
 }
 
 /** Builds a day-by-day PDF of the given settlements (oldest first) and downloads it. */
-export async function downloadPaymentHistoryPdf(settlements: Settlement[]): Promise<void> {
+export async function downloadPaymentHistoryPdf(
+  settlements: Settlement[],
+  roomName: string
+): Promise<void> {
   // Loaded on demand so the PDF library stays out of the main bundle.
   const [{ jsPDF }, { autoTable }] = await Promise.all([
     import("jspdf"),
@@ -70,7 +82,7 @@ export async function downloadPaymentHistoryPdf(settlements: Settlement[]): Prom
   pdf.setFontSize(11);
   pdf.setTextColor(...MUTED);
   pdf.text(
-    pdfText(`Payment history - generated ${formatFullDate(generatedAt)}, ${formatTime(generatedAt)}`),
+    pdfText(`${roomName} payment history - generated ${formatFullDate(generatedAt)}, ${formatTime(generatedAt)}`),
     MARGIN,
     80
   );

@@ -3,9 +3,10 @@ import { useMemo, useState } from "react";
 import { AppShell } from "@/app/AppShell";
 import { ToastProvider } from "@/components/feedback";
 import { StaticAuthProvider } from "@/features/auth";
+import { RoomSession } from "@/features/rooms";
 
 import { DemoBanner } from "./DemoBanner";
-import { createDemoUser, PLACEHOLDER_NAME } from "./seed";
+import { createDemoAccount, DEMO_ROOM_ID, PLACEHOLDER_NAME } from "./seed";
 import { startDemo } from "./store";
 import { WelcomeDialog } from "./WelcomeDialog";
 
@@ -13,13 +14,13 @@ import { WelcomeDialog } from "./WelcomeDialog";
 const restartDemo = () => window.location.reload();
 
 /**
- * The real app, signed in as the sample household's admin under the
+ * The real app, signed in to the sample room as its admin under the
  * visitor's name. The demo build swaps every Firebase service for the
  * in-memory one in ./services.
  */
 export function DemoApp() {
   const [visitorName, setVisitorName] = useState<string | null>(null);
-  const user = useMemo(() => createDemoUser(visitorName ?? PLACEHOLDER_NAME), [visitorName]);
+  const account = useMemo(() => createDemoAccount(visitorName ?? PLACEHOLDER_NAME), [visitorName]);
 
   const handleStart = (name: string) => {
     startDemo(name);
@@ -28,9 +29,11 @@ export function DemoApp() {
 
   return (
     <ToastProvider>
-      <StaticAuthProvider user={user} isAdmin onSignOut={restartDemo}>
+      <StaticAuthProvider account={account} onSignOut={restartDemo}>
         <DemoBanner onRestart={restartDemo} />
-        <AppShell />
+        <RoomSession roomId={DEMO_ROOM_ID}>
+          <AppShell />
+        </RoomSession>
         <WelcomeDialog open={visitorName === null} onStart={handleStart} />
       </StaticAuthProvider>
     </ToastProvider>

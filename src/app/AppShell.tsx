@@ -2,10 +2,11 @@ import { useCallback, useEffect, useRef, useState, type ComponentType } from "re
 
 import { AppHeader, BottomNav } from "@/components/layout";
 import { AccountsPage } from "@/features/accounts";
-import { AccessRequestList, useAccessRequests } from "@/features/admin";
-import { useAuth, useCurrentUser } from "@/features/auth";
+import { RoomPanel, useJoinRequests } from "@/features/admin";
+import { useAuth } from "@/features/auth";
 import { CalendarPage } from "@/features/calendar";
 import { HomePage } from "@/features/meals";
+import { useCurrentUser, useRoom } from "@/features/rooms";
 import { VendorBoardSync } from "@/features/vendor";
 import { useSwipe } from "@/hooks/useSwipe";
 
@@ -31,11 +32,12 @@ function moveBy(current: NavState, step: 1 | -1): NavState {
   return next ? { tab: next.id, direction: step > 0 ? "forward" : "back" } : current;
 }
 
-/** Layout for signed-in users: header, the active page and the tab bar. Swipe to change tabs. */
+/** Layout for a room's members: header, the active page and the tab bar. Swipe to change tabs. */
 export function AppShell() {
   const user = useCurrentUser();
-  const { signOut, isAdmin } = useAuth();
-  const accessRequests = useAccessRequests(isAdmin);
+  const { room } = useRoom();
+  const { signOut } = useAuth();
+  const joinRequests = useJoinRequests();
   const [nav, setNav] = useState<NavState>({ tab: "home", direction: "forward" });
   const contentRef = useRef<HTMLElement>(null);
 
@@ -64,8 +66,8 @@ export function AppShell() {
       <AppHeader
         userName={user.displayName}
         userEmail={user.email}
-        badgeCount={accessRequests.length}
-        accountExtras={isAdmin ? <AccessRequestList requests={accessRequests} /> : null}
+        badgeCount={joinRequests.length}
+        accountExtras={<RoomPanel requests={joinRequests} />}
         onSignOut={signOut}
       />
 
@@ -77,8 +79,8 @@ export function AppShell() {
 
       <BottomNav items={TABS} activeId={nav.tab} onChange={goToTab} />
 
-      {/* Keeps the public vendor board (vendor.html) up to date. */}
-      <VendorBoardSync />
+      {/* Keeps the room's public vendor board (vendor.html?room=…) up to date. */}
+      <VendorBoardSync room={room} />
     </div>
   );
 }

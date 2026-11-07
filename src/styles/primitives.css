@@ -98,6 +98,17 @@
   width: 100%;
 }
 
+/* A quiet text button, e.g. Cancel under a stack of buttons. */
+.button-ghost {
+  min-height: 44px;
+  background: transparent;
+  color: var(--color-text-secondary);
+}
+
+.button-ghost:disabled {
+  opacity: 0.5;
+}
+
 .pill-button {
   display: inline-flex;
   align-items: center;
@@ -244,4 +255,69 @@
   100% {
     transform: scale(1);
   }
+}
+
+/* Destructive actions (remove, delete) */
+
+.button-danger {
+  background: var(--color-negative);
+  color: #ffffff;
+}
+
+.button-danger:disabled {
+  opacity: 0.5;
+}
+
+/* iOS-style switch: <label class="switch"><input type="checkbox" role="switch"><span class="switch-track"></span>Label</label> */
+
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.switch input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.switch-track {
+  position: relative;
+  flex-shrink: 0;
+  width: 46px;
+  height: 28px;
+  border-radius: var(--radius-pill);
+  background: rgba(120, 120, 128, 0.24);
+  transition: background-color 200ms ease;
+}
+
+.switch-track::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+  transition: transform 260ms var(--ease-spring);
+}
+
+.switch input:checked + .switch-track {
+  background: var(--color-positive);
+}
+
+.switch input:checked + .switch-track::after {
+  transform: translateX(18px);
+}
+
+.switch input:focus-visible + .switch-track {
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.3);
+}
+
+.switch input:disabled + .switch-track {
+  opacity: 0.5;
 }

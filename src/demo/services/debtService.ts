@@ -6,7 +6,7 @@ import { watchDemoState } from "../store";
 
 export { getDebtId, getDebtPair, getPairAmountChange, toDebt } from "@/utils/debtPairs";
 
-export function subscribeToDebts(uid: string, onChange: (debts: Debt[]) => void) {
+export function subscribeToDebts(_roomId: string, uid: string, onChange: (debts: Debt[]) => void) {
   return watchDemoState((state) =>
     onChange(
       Object.entries(state.debts)

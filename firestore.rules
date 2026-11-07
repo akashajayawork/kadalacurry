@@ -1,7 +1,9 @@
 rules_version = '2';
 
-// Kadalacurry Firestore security rules.
-// Paste into Firebase Console → Firestore Database → Rules, then Publish.
+// Kadalacurry Firestore security rules (v2: rooms).
+// Publish: Firebase Console → Firestore Database → Rules → paste → Publish,
+// or `npx firebase-tools deploy --only firestore:rules`.
+// Tested against the emulator by `npm run test:rules` (tests/firestore.rules.test.ts).
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -15,69 +17,353 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == uid;
     }
 
-    // users/{uid} is created by the admin. Its existence is what approves an account.
-    function isApproved() {
+    // The owner of the whole app: approves new rooms and can delete any room.
+    // Keep in step with src/config/mainAdmin.ts.
+    function isMainAdmin() {
       return signedIn()
-        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
-    }
-
-    function isAdmin() {
-      return isApproved()
-        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'admin';
+        && request.auth.token.email == 'akashajayawork@gmail.com'
+        && request.auth.token.email_verified == true;
     }
 
     function changedKeys() {
       return request.resource.data.diff(resource.data).affectedKeys();
     }
 
-    // ---------- Approved accounts (source of truth for balances) ----------
+    function roomPath(roomId) {
+      return /databases/$(database)/documents/rooms/$(roomId);
+    }
 
-    match /users/{uid} {
-      // Anyone may check their own approval; approved roommates can read each other.
-      allow get: if isSelf(uid) || isApproved();
+    function memberPath(roomId, uid) {
+      return /databases/$(database)/documents/rooms/$(roomId)/members/$(uid);
+    }
 
-      // Approving or removing roommates is done by the admin (or in the console).
-      allow create, delete: if isAdmin();
+    function joinRequestPath(roomId, uid) {
+      return /databases/$(database)/documents/rooms/$(roomId)/joinRequests/$(uid);
+    }
+
+    // Being in a room means having a member document in it.
+    function isMember(roomId) {
+      return signedIn() && exists(memberPath(roomId, request.auth.uid));
+    }
+
+    // Every room has exactly one admin, set when it's created and never changed.
+    function isRoomAdmin(roomId) {
+      return signedIn() && get(roomPath(roomId)).data.adminUid == request.auth.uid;
+    }
+
+    // Room ids are the URL-safe form of the name, and the room's link.
+    // Keep in step with src/utils/roomName.ts and RESERVED_ROOM_IDS in src/constants/routes.ts.
+    function isValidRoomId(roomId) {
+      return roomId.matches('^[a-z0-9][a-z0-9-]{1,28}[a-z0-9]$')
+        && !(roomId in ['admin', 'api', 'app', 'assets', 'create', 'demo', 'help',
+                        'index', 'login', 'new', 'room', 'rooms', 'vendor']);
+    }
+
+    function isValidName(name) {
+      return name is string && name.size() > 0 && name.size() <= 40;
+    }
+
+    // A fixed price per person, in whole rupees. Keep in step with MAX_MEAL_PRICE.
+    function isValidMeal(meal) {
+      return meal is map
+        && meal.keys().hasOnly(['enabled', 'price'])
+        && meal.enabled is bool
+        && meal.price is int
+        && meal.price >= 1
+        && meal.price <= 5000;
+    }
+
+    // Breakfast, lunch and dinner, at least one of them on.
+    function isValidMeals(meals) {
+      return meals is map
+        && meals.keys().hasOnly(['breakfast', 'lunch', 'dinner'])
+        && meals.keys().hasAll(['breakfast', 'lunch', 'dinner'])
+        && isValidMeal(meals.breakfast)
+        && isValidMeal(meals.lunch)
+        && isValidMeal(meals.dinner)
+        && (meals.breakfast.enabled || meals.lunch.enabled || meals.dinner.enabled);
+    }
+
+    function isValidVendorUpi(value) {
+      return value is string && value.size() <= 100;
+    }
+
+    // ---------- Room requests: asking the main admin for a room (/create) ----------
+
+    match /roomRequests/{uid} {
+      function isPendingRequest() {
+        let data = request.resource.data;
+        return data.keys().hasOnly(['name', 'email', 'photoURL', 'requestedAt', 'status'])
+          && data.status == 'pending'
+          && data.requestedAt == request.time;
+      }
+
+      allow get: if isSelf(uid) || isMainAdmin();
+      allow list: if isMainAdmin();
+
+      // Only for your own account, and only ever as pending.
+      allow create: if isSelf(uid) && isPendingRequest();
 
       allow update: if
-        // Saving your own meal order changes your own balance.
+        // Refreshing your own request while it waits.
+        (isSelf(uid) && resource.data.status == 'pending' && isPendingRequest())
+        // The main admin approves it.
+        || (isMainAdmin()
+          && resource.data.status == 'pending'
+          && changedKeys().hasOnly(['status', 'approvedAt'])
+          && request.resource.data.status == 'approved'
+          && request.resource.data.approvedAt == request.time);
+
+      // Withdrawn, declined, or used up by creating the room.
+      allow delete: if isSelf(uid) || isMainAdmin();
+    }
+
+    // ---------- Rooms ----------
+
+    match /rooms/{roomId} {
+      function usesApprovedRequest() {
+        let requestPath = /databases/$(database)/documents/roomRequests/$(request.auth.uid);
+        return get(requestPath).data.status == 'approved' && !existsAfter(requestPath);
+      }
+
+      // Anyone signed in can look a room up by its id: to ask to join it, or to
+      // check a name is free. Only the main admin can list them all.
+      allow get: if signedIn();
+      allow list: if isMainAdmin();
+
+      // The creator becomes the room's one admin and its first member in the same
+      // write, and uses up their approved room request (the main admin needs
+      // none). A room that already exists can't be created again, so every room
+      // name is unique.
+      allow create: if signedIn()
+        && isValidRoomId(roomId)
+        && request.resource.data.keys().hasOnly(['name', 'adminUid', 'adminName', 'meals', 'vendorUpi', 'createdAt'])
+        && isValidName(request.resource.data.name)
+        && request.resource.data.adminUid == request.auth.uid
+        && isValidName(request.resource.data.adminName)
+        && isValidMeals(request.resource.data.meals)
+        && isValidVendorUpi(request.resource.data.vendorUpi)
+        && request.resource.data.createdAt == request.time
+        && existsAfter(memberPath(roomId, request.auth.uid))
+        && (isMainAdmin() || usesApprovedRequest());
+
+      // The room admin can change meals, prices and the vendor's UPI at any time.
+      // The name and the admin can never change.
+      allow update: if isRoomAdmin(roomId)
+        && changedKeys().hasOnly(['meals', 'vendorUpi'])
+        && isValidMeals(request.resource.data.meals)
+        && isValidVendorUpi(request.resource.data.vendorUpi);
+
+      allow delete: if isMainAdmin();
+
+      // ----- Members: rooms/{roomId}/members/{uid} (name and unpaid due) -----
+
+      match /members/{uid} {
+        function isNewMember() {
+          let data = request.resource.data;
+          return data.keys().hasOnly(['name', 'email', 'outstandingBalance', 'joinedAt'])
+            && isValidName(data.name)
+            && (data.get('email', null) == null || data.email is string)
+            && data.outstandingBalance == 0
+            && data.joinedAt == request.time;
+        }
+
+        // Your own membership (to see whether you're in), or everyone's once you're in.
+        allow get: if isSelf(uid) || isMember(roomId);
+        allow list: if isMember(roomId);
+
+        // Only the room admin adds people: someone who asked to join (their
+        // request is removed in the same write), or themselves while creating
+        // the room. Nobody can be added without asking.
+        allow create: if signedIn()
+          && getAfter(roomPath(roomId)).data.adminUid == request.auth.uid
+          && isNewMember()
+          && (
+            (uid == request.auth.uid && !exists(roomPath(roomId)))
+            || (exists(joinRequestPath(roomId, uid)) && !existsAfter(joinRequestPath(roomId, uid)))
+          );
+
+        // Saving an order moves your own due; settling the bill zeroes everyone's.
+        // The due never goes below zero.
+        allow update: if isMember(roomId)
+          && changedKeys().hasOnly(['outstandingBalance'])
+          && request.resource.data.outstandingBalance is number
+          && request.resource.data.outstandingBalance >= 0
+          && (isSelf(uid) || request.resource.data.outstandingBalance == 0);
+
+        // The room admin removes people: never themselves (a room keeps its one
+        // admin), and only once their meals are paid for.
+        allow delete: if isRoomAdmin(roomId)
+          && uid != request.auth.uid
+          && resource.data.outstandingBalance == 0;
+      }
+
+      // ----- Meal orders: rooms/{roomId}/orders/{YYYY-MM-DD}_{uid} -----
+
+      match /orders/{orderId} {
+        function isValidOrder() {
+          let order = request.resource.data;
+          return order.userId == request.auth.uid
+            && order.deliveryDate is string
+            && orderId == order.deliveryDate + '_' + request.auth.uid
+            && order.breakfast is bool
+            && order.lunch is bool
+            && order.dinner is bool
+            && order.prices is map
+            && order.amount is number
+            && order.amount >= 0;
+        }
+
+        allow read: if isMember(roomId);
+        allow create: if isMember(roomId) && isValidOrder();
+        allow update: if isMember(roomId)
+          && resource.data.userId == request.auth.uid
+          && isValidOrder();
+      }
+
+      // ----- Debts between two roommates: debts/{uidA}_{uidB}, ids sorted -----
+      // `amount` is what users[0] owes users[1]; negative means the reverse.
+
+      match /debts/{pairId} {
+        function isValidDebt() {
+          let debt = request.resource.data;
+          return debt.users is list
+            && debt.users.size() == 2
+            && debt.users[0] < debt.users[1]
+            && pairId == debt.users[0] + '_' + debt.users[1]
+            && request.auth.uid in debt.users
+            && debt.amount is number;
+        }
+
+        // Only the two roommates involved can see a debt. (resource is null when
+        // a transaction reads a pair that doesn't exist yet.)
+        allow get: if isMember(roomId)
+          && (resource == null || request.auth.uid in resource.data.users);
+        allow list: if isMember(roomId) && request.auth.uid in resource.data.users;
+
+        allow create, update: if isMember(roomId) && isValidDebt();
+      }
+
+      // ----- Payment history (append-only) -----
+
+      match /settlements/{settlementId} {
+        allow read: if isMember(roomId);
+
+        allow create: if isMember(roomId)
+          && request.resource.data.createdBy == request.auth.uid
+          && request.resource.data.kind in ['bill', 'repayment']
+          && request.resource.data.amount is number
+          && request.resource.data.amount > 0
+          && request.resource.data.createdAt == request.time;
+      }
+
+      // ----- Join requests: people who signed in to the room and aren't in it -----
+
+      match /joinRequests/{uid} {
+        // Only for your own account, to a room that exists and you aren't in.
+        allow create, update: if isSelf(uid)
+          && exists(roomPath(roomId))
+          && !isMember(roomId)
+          && request.resource.data.keys().hasOnly(['name', 'email', 'photoURL', 'requestedAt'])
+          && request.resource.data.requestedAt == request.time;
+
+        // The room admin sees requests and approves or declines them.
+        allow get: if isSelf(uid) || isRoomAdmin(roomId);
+        allow list: if isRoomAdmin(roomId);
+        allow delete: if isSelf(uid) || isRoomAdmin(roomId);
+      }
+
+      // ----- The main admin -----
+      // Can delete a room and everything in it (/admin), and can write anything
+      // in a room they're the admin of: that's how the original house is moved
+      // in with its balances and history intact.
+
+      match /{collection}/{docId} {
+        allow read, delete: if isMainAdmin();
+        allow create, update: if isMainAdmin()
+          && getAfter(roomPath(roomId)).data.adminUid == request.auth.uid;
+      }
+    }
+
+    // ---------- Vendor boards: public numbers for a room's meal vendor ----------
+    // vendor.html?room=<roomId>. Only totals (meal counts per day and the house's
+    // due), never names.
+
+    match /vendorBoards/{roomId} {
+      // Anyone with the link can read a board, without signing in. Listing them
+      // all isn't allowed, so nobody can find other rooms this way.
+      allow get: if true;
+      allow list: if isMainAdmin();
+
+      // The room's members' apps keep it up to date.
+      allow create, update: if isMember(roomId)
+        && request.resource.data.keys().hasOnly(['roomName', 'meals', 'totalDue', 'days', 'updatedAt'])
+        && request.resource.data.roomName is string
+        && request.resource.data.meals is list
+        && request.resource.data.totalDue is number
+        && request.resource.data.days is map;
+
+      allow delete: if isMainAdmin();
+    }
+
+    // ======================================================================
+    // The original single-house app (v1): users, roommates, dailyOrders, …
+    //
+    // These keep the old app working exactly as before until you move the
+    // house into a room (/admin → "Original house"), so nothing breaks while
+    // you switch over. Once the move is done and checked, delete the old copy
+    // from /admin and then delete everything from here to the end of the file
+    // (keep the two closing braces).
+    // ======================================================================
+
+    function v1IsApproved() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function v1IsAdmin() {
+      return v1IsApproved()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'admin';
+    }
+
+    // The main admin reads all of it to move it, and deletes it afterwards.
+    match /{collection}/{docId} {
+      allow read, delete: if isMainAdmin()
+        && collection in ['users', 'roommates', 'dailyOrders', 'debts', 'settlements',
+                          'accessRequests', 'vendorBoard'];
+    }
+
+    match /users/{uid} {
+      allow get: if isSelf(uid) || v1IsApproved();
+      allow create, delete: if v1IsAdmin();
+      allow update: if
         (isSelf(uid)
           && changedKeys().hasOnly(['outstandingBalance'])
           && request.resource.data.outstandingBalance is number)
-        // Settling the household bill resets every roommate's balance to zero.
-        || (isApproved()
+        || (v1IsApproved()
           && changedKeys().hasOnly(['outstandingBalance'])
           && request.resource.data.outstandingBalance == 0)
-        || isAdmin();
+        || v1IsAdmin();
     }
 
-    // ---------- Shared roommate profiles (name + mirrored balance) ----------
-
     match /roommates/{uid} {
-      allow read: if isApproved();
-
-      // Created by the roommate on first login, or by the admin when approving them.
-      allow create: if (isSelf(uid) || isAdmin()) && isApproved()
+      allow read: if v1IsApproved();
+      allow create: if (isSelf(uid) || v1IsAdmin()) && v1IsApproved()
         && request.resource.data.keys().hasOnly(['name', 'outstandingBalance'])
         && request.resource.data.name is string
         && request.resource.data.outstandingBalance is number;
-
-      allow update: if isApproved() && (
+      allow update: if v1IsApproved() && (
         (isSelf(uid)
           && changedKeys().hasOnly(['name', 'outstandingBalance'])
           && request.resource.data.outstandingBalance is number)
-        // Settling the household bill.
         || (changedKeys().hasOnly(['outstandingBalance'])
           && request.resource.data.outstandingBalance == 0)
       );
-
-      allow delete: if isAdmin();
+      allow delete: if v1IsAdmin();
     }
 
-    // ---------- Meal orders: dailyOrders/{YYYY-MM-DD}_{uid} ----------
-
     match /dailyOrders/{orderId} {
-      function isValidOrder() {
+      function v1IsValidOrder() {
         let order = request.resource.data;
         return order.userId == request.auth.uid
           && orderId == order.deliveryDate + '_' + request.auth.uid
@@ -86,19 +372,15 @@ service cloud.firestore {
           && order.amount is number;
       }
 
-      allow read: if isApproved();
-      allow create: if isApproved() && isValidOrder();
-      allow update: if isApproved()
+      allow read: if v1IsApproved();
+      allow create: if v1IsApproved() && v1IsValidOrder();
+      allow update: if v1IsApproved()
         && resource.data.userId == request.auth.uid
-        && isValidOrder();
-      allow delete: if false;
+        && v1IsValidOrder();
     }
 
-    // ---------- Debts between two roommates: debts/{uidA}_{uidB}, ids sorted ----------
-    // `amount` is what users[0] owes users[1]; negative means the reverse.
-
     match /debts/{pairId} {
-      function isValidDebt() {
+      function v1IsValidDebt() {
         let debt = request.resource.data;
         return debt.users is list
           && debt.users.size() == 2
@@ -108,52 +390,32 @@ service cloud.firestore {
           && debt.amount is number;
       }
 
-      // Only the two roommates involved can see a debt. (resource is null when
-      // a transaction reads a pair that doesn't exist yet.)
-      allow get: if isApproved()
+      allow get: if v1IsApproved()
         && (resource == null || request.auth.uid in resource.data.users);
-      allow list: if isApproved() && request.auth.uid in resource.data.users;
-
-      allow create, update: if isApproved() && isValidDebt();
-      allow delete: if false;
+      allow list: if v1IsApproved() && request.auth.uid in resource.data.users;
+      allow create, update: if v1IsApproved() && v1IsValidDebt();
     }
 
-    // ---------- Payment history (append-only) ----------
-
     match /settlements/{settlementId} {
-      allow read: if isApproved();
-
-      allow create: if isApproved()
+      allow read: if v1IsApproved();
+      allow create: if v1IsApproved()
         && request.resource.data.createdBy == request.auth.uid
         && request.resource.data.kind in ['bill', 'repayment']
         && request.resource.data.amount is number
         && request.resource.data.amount > 0
         && request.resource.data.createdAt == request.time;
-
-      allow update, delete: if false;
     }
 
-    // ---------- Access requests: people who signed in but aren't approved yet ----------
-
     match /accessRequests/{uid} {
-      // You can only leave (or refresh) a request for your own Google account.
       allow create, update: if isSelf(uid)
         && request.resource.data.keys().hasOnly(['name', 'email', 'photoURL', 'requestedAt'])
         && request.resource.data.requestedAt == request.time;
-
-      // Only the admin sees requests, and approves or declines them.
-      allow read, delete: if isAdmin();
+      allow read, delete: if v1IsAdmin();
     }
 
-    // ---------- Vendor board: public numbers for the meal vendor (vendor.html) ----------
-    // Only totals live here (meal counts per day and the house's total due), no names.
-
     match /vendorBoard/{boardId} {
-      // Anyone with the link can read it, without signing in.
       allow read: if true;
-
-      // The roommates' apps keep it up to date.
-      allow write: if isApproved()
+      allow write: if v1IsApproved()
         && boardId == 'current'
         && request.resource.data.keys().hasOnly(['totalDue', 'days', 'updatedAt'])
         && request.resource.data.totalDue is number

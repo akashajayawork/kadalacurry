@@ -1,6 +1,6 @@
 import { useContext } from "react";
 
-import type { AppUser } from "@/types";
+import type { GoogleAccount } from "@/types";
 
 import { AuthContext } from "../context/AuthContext";
 
@@ -14,13 +14,13 @@ export function useAuth() {
   return context;
 }
 
-/** Returns the signed-in user. Only use inside screens rendered by <AuthGate>. */
-export function useCurrentUser(): AppUser {
-  const { user } = useAuth();
+/** The signed-in Google account. Only use inside screens rendered by <SignInGate>. */
+export function useAccount(): GoogleAccount {
+  const { account } = useAuth();
 
-  if (!user) {
-    throw new Error("useCurrentUser must be used inside <AuthGate>.");
+  if (!account) {
+    throw new Error("useAccount must be used inside <SignInGate>.");
   }
 
-  return user;
+  return account;
 }

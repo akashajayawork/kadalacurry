@@ -10,10 +10,12 @@ import {
 } from "firebase/firestore";
 
 import { db } from "@/config/firebase";
-import { COLLECTIONS, VENDOR_BOARD_ID } from "@/constants/firestore";
-import type { MealCounts, VendorBoard } from "@/types";
+import { COLLECTIONS } from "@/constants/firestore";
+import { MEALS } from "@/constants/meals";
+import type { Meal, MealCounts, VendorBoard, VendorBoardUpdate } from "@/types";
 
-const boardRef = doc(db, COLLECTIONS.vendorBoard, VENDOR_BOARD_ID);
+/** vendorBoards/{roomId}: public, so it sits outside the room. */
+const boardRef = (roomId: string) => doc(db, COLLECTIONS.vendorBoards, roomId);
 
 const asCount = (value: unknown) => (typeof value === "number" ? value : 0);
 
@@ -21,11 +23,17 @@ function toVendorBoard(data: DocumentData): VendorBoard {
   const days: Record<string, MealCounts> = {};
 
   for (const [dateId, counts] of Object.entries(data.days ?? {})) {
-    const value = counts as Partial<MealCounts>;
-    days[dateId] = { breakfast: asCount(value.breakfast), lunch: asCount(value.lunch) };
+    const value = (counts ?? {}) as Partial<Record<Meal, unknown>>;
+    days[dateId] = {
+      breakfast: asCount(value.breakfast),
+      lunch: asCount(value.lunch),
+      dinner: asCount(value.dinner),
+    };
   }
 
   return {
+    roomName: typeof data.roomName === "string" ? data.roomName : "",
+    meals: Array.isArray(data.meals) ? MEALS.filter((meal) => data.meals.includes(meal)) : [],
     totalDue: asCount(data.totalDue),
     days,
     updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate() : null,
@@ -34,34 +42,33 @@ function toVendorBoard(data: DocumentData): VendorBoard {
 
 /** Real-time board, or null if nobody has created it yet. Readable without signing in. */
 export function subscribeToVendorBoard(
+  roomId: string,
   onChange: (board: VendorBoard | null) => void,
   onError?: (error: Error) => void
 ) {
   return onSnapshot(
-    boardRef,
+    boardRef(roomId),
     (snapshot) => onChange(snapshot.exists() ? toVendorBoard(snapshot.data()) : null),
     onError
   );
 }
 
-/**
- * Updates the total due and the counts for the given days. Other days on the
- * board are left alone, except `removeDays`, which are deleted.
- */
-export async function saveVendorBoard(
-  totalDue: number,
-  days: Record<string, MealCounts>,
-  removeDays: string[] = []
-): Promise<void> {
-  const dayUpdates: Record<string, MealCounts | FieldValue> = { ...days };
+export async function saveVendorBoard(roomId: string, update: VendorBoardUpdate): Promise<void> {
+  const dayUpdates: Record<string, MealCounts | FieldValue> = { ...update.days };
 
-  for (const dateId of removeDays) {
+  for (const dateId of update.removeDays) {
     dayUpdates[dateId] = deleteField();
   }
 
   await setDoc(
-    boardRef,
-    { totalDue, days: dayUpdates, updatedAt: serverTimestamp() },
+    boardRef(roomId),
+    {
+      roomName: update.roomName,
+      meals: update.meals,
+      totalDue: update.totalDue,
+      days: dayUpdates,
+      updatedAt: serverTimestamp(),
+    },
     { merge: true }
   );
 }

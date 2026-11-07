@@ -1,0 +1,66 @@
+.landing-rooms {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin-top: 6px;
+}
+
+.landing-room {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+  font-size: 16px;
+  font-weight: 600;
+  text-align: left;
+  transition: transform 160ms var(--ease-out);
+}
+
+.landing-room:active {
+  transform: scale(0.98);
+}
+
+.landing-room .avatar {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.landing-room-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.landing-room svg {
+  color: var(--color-text-tertiary);
+}
+
+.landing-open {
+  width: 100%;
+  margin-top: 6px;
+  text-align: left;
+}
+
+.landing-open-row {
+  display: flex;
+  gap: 8px;
+}
+
+.landing-open-row .field-input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Overrides the auth card's button spacing. */
+.auth-card .landing-open-go {
+  flex-shrink: 0;
+  width: 44px;
+  min-height: 44px;
+  margin-top: 0;
+  padding: 0;
+}

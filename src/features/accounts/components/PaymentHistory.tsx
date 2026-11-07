@@ -5,7 +5,7 @@ import { formatRupees } from "@/utils/currency";
 import { formatShortDate, formatTime } from "@/utils/date";
 
 import { usePaymentHistoryDownload } from "../hooks/usePaymentHistoryDownload";
-import { describeSettlement } from "../utils/settlements";
+import { describeSettlement, PAID_VIA_LABELS } from "../utils/settlements";
 
 type PaymentHistoryProps = {
   settlements: Settlement[];
@@ -54,6 +54,7 @@ export function PaymentHistory({ settlements, loading, currentUserId }: PaymentH
                   {settlement.createdAt && (
                     <span className="history-meta">
                       {formatShortDate(settlement.createdAt)} · {formatTime(settlement.createdAt)}
+                      {settlement.kind === "bill" && settlement.paidVia && ` · ${PAID_VIA_LABELS[settlement.paidVia]}`}
                     </span>
                   )}
                 </span>

@@ -265,8 +265,13 @@
     transform 150ms var(--ease-out);
 }
 
-.add-meal:active {
+.add-meal:active:not(:disabled) {
   transform: scale(0.94);
+}
+
+/* Waiting for the saved order. */
+.add-meal:disabled {
+  opacity: 0.45;
 }
 
 .add-meal.is-added {

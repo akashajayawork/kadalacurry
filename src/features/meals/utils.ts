@@ -1,6 +1,6 @@
-import type { Meal, MealSelection } from "@/types";
+import type { Meal, MealSelection, MealSettings, PricedSelection } from "@/types";
 import { addDays } from "@/utils/date";
-import { calculateOrderAmount } from "@/utils/meals";
+import { priceSelection } from "@/utils/meals";
 
 import type { OrderDay } from "./types";
 
@@ -15,16 +15,16 @@ export function getDeliveryDate(day: OrderDay): Date {
  *
  * @param due the saved due (what's still unpaid)
  * @param selection the current selection, including unsaved changes
- * @param saved the selection that's saved for this day
+ * @param saved the order that's saved for this day
  */
 export function canRemoveMeal(
   due: number,
   selection: MealSelection,
-  saved: MealSelection,
-  meal: Meal
+  saved: PricedSelection,
+  meal: Meal,
+  settings: MealSettings
 ): boolean {
-  const newAmount = calculateOrderAmount({ ...selection, [meal]: false });
-  const oldAmount = calculateOrderAmount(saved);
+  const newAmount = priceSelection({ ...selection, [meal]: false }, settings, saved).amount;
 
-  return newAmount >= oldAmount || due + newAmount - oldAmount >= 0;
+  return newAmount >= saved.amount || due + newAmount - saved.amount >= 0;
 }

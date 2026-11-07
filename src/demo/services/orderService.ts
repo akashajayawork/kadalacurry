@@ -1,8 +1,8 @@
 // Demo stand-in for src/services/orderService.ts (same functions, in memory).
 import { DEFAULT_ROOMMATE_NAME } from "@/constants/app";
-import { EMPTY_SELECTION } from "@/constants/meals";
-import type { AppUser, DailyOrder, MealSelection } from "@/types";
-import { calculateOrderAmount } from "@/utils/meals";
+import { EMPTY_SELECTION, MEALS } from "@/constants/meals";
+import type { AppUser, DailyOrder, MealSelection, PricedSelection } from "@/types";
+import { priceSelection } from "@/utils/meals";
 
 import { simulateLatency, updateDemoState, watchDemoState } from "../store";
 
@@ -13,15 +13,29 @@ export class PaidMealsError extends Error {
   }
 }
 
+export class MealUnavailableError extends Error {
+  constructor() {
+    super("That meal isn't being ordered any more.");
+    this.name = "MealUnavailableError";
+  }
+}
+
+const NOTHING_SAVED: PricedSelection = { ...EMPTY_SELECTION, prices: {}, amount: 0 };
+
 const getOrderId = (dateId: string, uid: string) => `${dateId}_${uid}`;
 
-export function subscribeToOrdersOnDates(dateIds: string[], onChange: (orders: DailyOrder[]) => void) {
+export function subscribeToOrdersOnDates(
+  _roomId: string,
+  dateIds: string[],
+  onChange: (orders: DailyOrder[]) => void
+) {
   return watchDemoState((state) =>
     onChange(Object.values(state.orders).filter((order) => dateIds.includes(order.deliveryDate)))
   );
 }
 
 export function subscribeToOrdersInRange(
+  _roomId: string,
   startDateId: string,
   endDateId: string,
   onChange: (orders: DailyOrder[]) => void
@@ -36,40 +50,47 @@ export function subscribeToOrdersInRange(
 }
 
 export function subscribeToUserOrder(
+  _roomId: string,
   dateId: string,
   uid: string,
-  onChange: (selection: MealSelection) => void
+  onChange: (order: PricedSelection) => void
 ) {
-  return watchDemoState((state) => {
-    const order = state.orders[getOrderId(dateId, uid)];
-    onChange({ breakfast: order?.breakfast ?? false, lunch: order?.lunch ?? false });
-  });
+  return watchDemoState((state) => onChange(state.orders[getOrderId(dateId, uid)] ?? NOTHING_SAVED));
 }
 
 /** Same rules as the real one: the due moves with the order and can't go below zero. */
-export async function saveOrder(user: AppUser, dateId: string, selection: MealSelection): Promise<void> {
+export async function saveOrder(
+  _roomId: string,
+  user: AppUser,
+  dateId: string,
+  selection: MealSelection
+): Promise<void> {
   await simulateLatency();
 
   updateDemoState((state) => {
-    const person = state.people[user.uid];
-    if (!person) throw new Error("Your approved user document could not be found.");
+    const member = state.members[user.uid];
+    if (!member) throw new Error("You're not a member of this room.");
 
     const orderId = getOrderId(dateId, user.uid);
-    const oldAmount = calculateOrderAmount(state.orders[orderId] ?? EMPTY_SELECTION);
-    const newAmount = calculateOrderAmount(selection);
-    const updatedBalance = person.outstandingBalance + newAmount - oldAmount;
+    const saved = state.orders[orderId] ?? NOTHING_SAVED;
+    const { meals } = state.room;
 
-    if (newAmount < oldAmount && updatedBalance < 0) throw new PaidMealsError();
+    if (MEALS.some((meal) => selection[meal] && !saved[meal] && !meals[meal].enabled)) {
+      throw new MealUnavailableError();
+    }
+
+    const order = priceSelection(selection, meals, saved);
+    const updatedBalance = member.outstandingBalance + order.amount - saved.amount;
+
+    if (order.amount < saved.amount && updatedBalance < 0) throw new PaidMealsError();
 
     state.orders[orderId] = {
+      ...order,
       userId: user.uid,
       userName: user.displayName || DEFAULT_ROOMMATE_NAME,
       deliveryDate: dateId,
-      breakfast: selection.breakfast,
-      lunch: selection.lunch,
-      amount: newAmount,
       status: "ordered",
     };
-    person.outstandingBalance = updatedBalance;
+    member.outstandingBalance = updatedBalance;
   });
 }

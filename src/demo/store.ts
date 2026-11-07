@@ -1,30 +1,31 @@
-import type { AccessRequest, DailyOrder, Settlement, VendorBoard } from "@/types";
+import type { DailyOrder, JoinRequest, Room, Settlement, VendorBoard } from "@/types";
 
 import type { DemoDebts } from "./ledger";
 import { createDemoState, PLACEHOLDER_NAME } from "./seed";
 
 /*
  * The demo's stand-in for Firestore: plain in-memory data, so nothing is saved
- * and every visit (or refresh) starts from the same sample household.
+ * and every visit (or refresh) starts from the same sample room.
  */
 
-export type DemoPerson = {
+export type DemoMember = {
   name: string;
   outstandingBalance: number;
   email?: string | null;
-  role?: "admin";
 };
 
 export type DemoState = {
-  /** users/{uid} and roommates/{uid} in one. */
-  people: Record<string, DemoPerson>;
-  /** dailyOrders/{YYYY-MM-DD}_{uid} */
+  /** rooms/{roomId}. The demo has just the one room. */
+  room: Room;
+  /** rooms/{roomId}/members/{uid} */
+  members: Record<string, DemoMember>;
+  /** rooms/{roomId}/orders/{YYYY-MM-DD}_{uid} */
   orders: Record<string, DailyOrder>;
-  /** debts/{uidA}_{uidB} */
+  /** rooms/{roomId}/debts/{uidA}_{uidB} */
   debts: DemoDebts;
   /** Payment history, oldest first. */
   settlements: Settlement[];
-  accessRequests: Record<string, AccessRequest>;
+  joinRequests: Record<string, JoinRequest>;
   vendorBoard: VendorBoard | null;
 };
 
@@ -37,7 +38,7 @@ export function getDemoState(): DemoState {
   return state;
 }
 
-/** Starts the household afresh with the visitor's name in it. */
+/** Starts the room afresh with the visitor's name in it. */
 export function startDemo(visitorName: string): void {
   state = createDemoState(visitorName);
   notifyListeners();

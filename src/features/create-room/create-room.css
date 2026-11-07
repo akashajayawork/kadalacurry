@@ -1,0 +1,71 @@
+.create-room-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  margin-top: 4px;
+  text-align: left;
+}
+
+/* The auth card spaces its buttons for single actions; the form handles its own gaps. */
+.auth-card .create-room-form .button {
+  margin-top: 0;
+}
+
+.create-room-form .button-primary {
+  margin-top: 6px;
+}
+
+.room-name-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: -6px;
+  font-size: 13px;
+}
+
+.room-name-link {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--color-text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.room-name-availability {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 4px;
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+}
+
+.room-name-status.is-available .room-name-availability {
+  color: var(--color-positive);
+}
+
+.room-name-status.is-taken .room-name-availability,
+.room-name-status.is-error .room-name-availability {
+  color: var(--color-negative);
+}
+
+.permanent-note {
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 90, 31, 0.1);
+  color: #b33a0c;
+  font-size: 14px;
+}
+
+.permanent-note svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.permanent-note strong {
+  font-weight: 700;
+}

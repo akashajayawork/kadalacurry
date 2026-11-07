@@ -1,6 +1,8 @@
+/** A member of the room. */
 export type Roommate = {
   id: string;
   name: string;
+  /** Their unpaid meal bill. Never below zero. */
   outstandingBalance: number;
 };
 

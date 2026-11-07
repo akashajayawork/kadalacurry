@@ -1,14 +1,18 @@
 {
   "name": "kadalacurry",
   "private": true,
-  "version": "1.1.0",
+  "version": "2.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "dev:demo": "vite --mode demo --port 5174",
+    "dev:emulator": "vite --mode emulator",
+    "emulators": "npx --yes firebase-tools@13 emulators:start --project demo-kadalacurry",
     "build": "tsc -b && vite build && vite build --mode demo",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:rules": "node scripts/test-rules.mjs",
+    "emulators:stop": "node scripts/stop-emulators.mjs"
   },
   "dependencies": {
     "firebase": "^13.1.0",
@@ -20,6 +24,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@firebase/rules-unit-testing": "^6.0.0",
     "@types/node": "^24.19.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",

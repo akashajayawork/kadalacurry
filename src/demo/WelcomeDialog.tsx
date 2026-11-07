@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from "react";
 
+import { CoffeeLink } from "@/components/brand";
 import { Dialog, Wordmark } from "@/components/ui";
+import { PATHS } from "@/constants/routes";
 
 /** Used if the browser closes the dialog without a name (e.g. a forced Escape). */
 const GUEST_NAME = "Guest";
@@ -33,7 +35,7 @@ function WelcomeForm({ onStart }: Pick<WelcomeDialogProps, "onStart">) {
       <Wordmark />
       <h2 className="dialog-title">Try the demo</h2>
       <p className="dialog-text">
-        You'll be the admin of a sample house with three roommates. Nothing you do is saved.
+        You'll be the admin of a sample room: approve a roommate, set meal prices, order dinner and settle the bill with Google Pay. Nothing you do is saved.
       </p>
 
       <label className="field">
@@ -53,6 +55,13 @@ function WelcomeForm({ onStart }: Pick<WelcomeDialogProps, "onStart">) {
         <button type="submit" className="button button-primary button-block" disabled={!trimmedName}>
           Start demo
         </button>
+        <a className="button button-ghost button-block" href={PATHS.create}>
+          Skip the demo, make a real room
+        </a>
+      </div>
+
+      <div className="demo-welcome-coffee">
+        <CoffeeLink variant="chip" />
       </div>
     </form>
   );

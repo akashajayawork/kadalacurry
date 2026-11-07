@@ -1,5 +1,5 @@
 // Demo stand-in for src/services/settlementService.ts (same functions, in memory).
-import type { Person, Settlement, SettlementShare } from "@/types";
+import type { PaymentMethod, Person, Settlement, SettlementShare } from "@/types";
 import { formatDateId } from "@/utils/date";
 import { getDebtId, toDebt } from "@/utils/debtPairs";
 
@@ -19,7 +19,18 @@ export class NothingToSettleError extends Error {
   }
 }
 
+export class DueChangedError extends Error {
+  readonly total: number;
+
+  constructor(total: number) {
+    super("The total due changed while paying.");
+    this.name = "DueChangedError";
+    this.total = total;
+  }
+}
+
 export function subscribeToRecentSettlements(
+  _roomId: string,
   count: number,
   onChange: (settlements: Settlement[]) => void
 ) {
@@ -33,21 +44,31 @@ export async function fetchAllSettlements(): Promise<Settlement[]> {
 }
 
 /** The payer pays everyone's due; what others owed becomes a debt to the payer. */
-export async function settleHouseholdBill(payer: Person): Promise<number> {
+export async function settleHouseholdBill(
+  _roomId: string,
+  payer: Person,
+  paidVia: PaymentMethod,
+  expectedTotal?: number
+): Promise<number> {
   await simulateLatency(700);
   let total = 0;
 
   updateDemoState((state) => {
-    const shares: SettlementShare[] = Object.entries(state.people)
-      .filter(([, person]) => person.outstandingBalance !== 0)
-      .map(([userId, person]) => ({ userId, name: person.name, amount: person.outstandingBalance }));
+    const shares: SettlementShare[] = Object.entries(state.members)
+      .filter(([, member]) => member.outstandingBalance !== 0)
+      .map(([userId, member]) => ({ userId, name: member.name, amount: member.outstandingBalance }));
 
     total = shares.reduce((sum, share) => sum + share.amount, 0);
     if (total <= 0) throw new NothingToSettleError();
+    if (expectedTotal !== undefined && total !== expectedTotal) throw new DueChangedError(total);
+
+    const names = Object.fromEntries(
+      Object.entries(state.members).map(([userId, member]) => [userId, member.name])
+    );
 
     for (const share of shares) {
-      state.people[share.userId].outstandingBalance = 0;
-      if (share.userId !== payer.id) addDebt(state.debts, share.userId, payer.id, share.amount);
+      state.members[share.userId].outstandingBalance = 0;
+      if (share.userId !== payer.id) addDebt(state.debts, share.userId, payer.id, share.amount, names);
     }
 
     const now = new Date();
@@ -57,6 +78,7 @@ export async function settleHouseholdBill(payer: Person): Promise<number> {
       amount: total,
       paidBy: payer.id,
       paidByName: payer.name,
+      paidVia,
       shares,
       createdBy: payer.id,
       createdByName: payer.name,
@@ -69,7 +91,7 @@ export async function settleHouseholdBill(payer: Person): Promise<number> {
 }
 
 /** Clears what the two of them owe each other and logs the repayment. */
-export async function settleDebt(currentUser: Person, otherUser: Person): Promise<number> {
+export async function settleDebt(_roomId: string, currentUser: Person, otherUser: Person): Promise<number> {
   await simulateLatency(600);
   let amount = 0;
 

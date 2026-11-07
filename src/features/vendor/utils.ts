@@ -1,23 +1,16 @@
-import type { DailyOrder, MealCounts, Roommate, VendorBoard } from "@/types";
+import { MEALS } from "@/constants/meals";
+import type { DailyOrder, Meal, MealCounts, Roommate, VendorBoard, VendorBoardUpdate } from "@/types";
 
 export function countMeals(orders: DailyOrder[], dateId: string): MealCounts {
   const dayOrders = orders.filter((order) => order.deliveryDate === dateId);
+  const count = (meal: Meal) => dayOrders.filter((order) => order[meal]).length;
 
-  return {
-    breakfast: dayOrders.filter((order) => order.breakfast).length,
-    lunch: dayOrders.filter((order) => order.lunch).length,
-  };
+  return { breakfast: count("breakfast"), lunch: count("lunch"), dinner: count("dinner") };
 }
 
 export function sumDues(roommates: Roommate[]): number {
   return roommates.reduce((total, roommate) => total + roommate.outstandingBalance, 0);
 }
-
-export type BoardUpdate = {
-  totalDue: number;
-  days: Record<string, MealCounts>;
-  removeDays: string[];
-};
 
 /**
  * What to write to bring the board up to date, or null if it already is.
@@ -25,20 +18,21 @@ export type BoardUpdate = {
  */
 export function getBoardUpdate(
   board: VendorBoard | null,
-  totalDue: number,
-  days: Record<string, MealCounts>,
+  wanted: Omit<VendorBoardUpdate, "removeDays">,
   todayId: string
-): BoardUpdate | null {
+): VendorBoardUpdate | null {
   const removeDays = Object.keys(board?.days ?? {}).filter((dateId) => dateId < todayId);
 
   const isCurrent =
     board !== null &&
-    board.totalDue === totalDue &&
+    board.roomName === wanted.roomName &&
+    board.meals.join() === wanted.meals.join() &&
+    board.totalDue === wanted.totalDue &&
     removeDays.length === 0 &&
-    Object.entries(days).every(([dateId, counts]) => {
+    Object.entries(wanted.days).every(([dateId, counts]) => {
       const current = board.days[dateId];
-      return current?.breakfast === counts.breakfast && current?.lunch === counts.lunch;
+      return MEALS.every((meal) => current?.[meal] === counts[meal]);
     });
 
-  return isCurrent ? null : { totalDue, days, removeDays };
+  return isCurrent ? null : { ...wanted, removeDays };
 }

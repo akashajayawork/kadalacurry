@@ -17,6 +17,7 @@ import { DEFAULT_ROOMMATE_NAME } from "@/constants/app";
 import { COLLECTIONS } from "@/constants/firestore";
 import type { Person, Settlement, SettlementShare } from "@/types";
 import { formatDateId } from "@/utils/date";
+import type { DebtRecord } from "@/utils/debtPairs";
 
 import { getDebtId, getDebtPair, getPairAmountChange, toDebt } from "./debtService";
 import { toRoommate } from "./roommateService";
@@ -163,7 +164,7 @@ export async function settleDebt(currentUser: Person, otherUser: Person): Promis
   return runTransaction(db, async (transaction) => {
     const snapshot = await transaction.get(debtRef);
     const owedToCurrentUser = snapshot.exists()
-      ? toDebt(currentUser.id, snapshot.id, snapshot.data()).amount
+      ? toDebt(currentUser.id, snapshot.id, snapshot.data() as DebtRecord).amount
       : 0;
 
     if (owedToCurrentUser === 0) throw new NothingToSettleError();

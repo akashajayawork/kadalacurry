@@ -7,8 +7,21 @@ Shared meal ordering and expense tracking for roommates. Mobile-first React + Ty
 ```bash
 cp .env.example .env.local   # fill in your Firebase web config
 npm install
-npm run dev
+npm run dev                  # the app
+npm run dev:demo             # the demo, at http://localhost:5173/demo/
 ```
+
+## Demo
+
+`/demo/` is the full app with a sample household, for showing people around without an account. The visitor is the admin, with five days of meals, three past payments, current dues, roommates who owe them and one access request waiting for approval.
+
+It's a separate build (`vite build --mode demo`) in which every Firebase service in `src/services/` is swapped for the in-memory copy in `src/demo/services/`. It never talks to Firebase, and since nothing is stored anywhere, the data resets whenever the page is left or refreshed. The sample data is in [src/demo/seed.ts](src/demo/seed.ts), dated relative to today. [src/demo/contract.ts](src/demo/contract.ts) makes `tsc` fail if a demo service stops matching its real one.
+
+## Branches and releases
+
+- `main` is what's live: every push to it deploys.
+- `develop` is the next version. Pushes to it only run a build check.
+- To release: bump `version` in `package.json` on `develop`, merge `develop` into `main`, and tag the merge `vX.Y.Z`.
 
 ## Firestore security rules
 
@@ -23,7 +36,7 @@ The rules live in [firestore.rules](firestore.rules). Publish them before using 
 3. **Settings → Pages → Build and deployment → Source:** choose **GitHub Actions**.
 4. **Firebase console → Authentication → Settings → Authorized domains:** add `<your-username>.github.io`, or Google sign-in will be refused.
 
-The app is then at `https://<your-username>.github.io/<repo>/` and the vendor page at `https://<your-username>.github.io/<repo>/vendor.html`.
+The app is then at `https://<your-username>.github.io/<repo>/`, the vendor page at `…/<repo>/vendor.html` and the demo at `…/<repo>/demo/`.
 
 ## Data model
 
@@ -55,6 +68,7 @@ src/
 │   └── ui/              # Dialog, EasterEgg slot, Wordmark
 ├── config/              # Firebase setup, easter-egg registry
 ├── constants/           # App-wide constants (meal prices, collection names)
+├── demo/                # Demo edition: sample data + in-memory stand-ins for services/
 ├── features/            # One folder per feature
 │   ├── admin/           # Access requests: approve or decline new roommates
 │   ├── auth/            # Login, approval gate, AuthProvider, useAuth

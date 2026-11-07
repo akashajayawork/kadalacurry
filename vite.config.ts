@@ -1,6 +1,6 @@
 import { fileURLToPath, URL } from 'node:url'
 import react from '@vitejs/plugin-react'
-import { defineConfig, type Alias } from 'vite'
+import { defineConfig, type Alias, type Plugin } from 'vite'
 
 const fromRoot = (path: string) => fileURLToPath(new URL(path, import.meta.url))
 
@@ -16,6 +16,26 @@ const DEMO_SERVICES = [
   'vendorService',
 ]
 
+/**
+ * `npm run dev:demo` only serves the demo at /demo/, but the terminal links to
+ * / (and people type /demo), which would open the real app with no sign-in.
+ * Send both to /demo/. GitHub Pages already redirects /demo to /demo/.
+ */
+const demoDevRedirect: Plugin = {
+  name: 'demo-dev-redirect',
+  configureServer(server) {
+    server.middlewares.use((req, res, next) => {
+      const path = req.url?.split('?')[0]
+      if (path === '/' || path === '/demo') {
+        res.writeHead(302, { Location: '/demo/' })
+        res.end()
+        return
+      }
+      next()
+    })
+  },
+}
+
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const isDemo = mode === 'demo'
@@ -30,7 +50,7 @@ export default defineConfig(({ mode }) => {
     : []
 
   return {
-    plugins: [react()],
+    plugins: isDemo ? [react(), demoDevRedirect] : [react()],
     // GitHub Pages serves the site from /<repo>/; the deploy workflow sets BASE_PATH.
     base: process.env.BASE_PATH ?? '/',
     resolve: {

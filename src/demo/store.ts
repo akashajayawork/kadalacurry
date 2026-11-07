@@ -1,7 +1,7 @@
 import type { AccessRequest, DailyOrder, Settlement, VendorBoard } from "@/types";
 
 import type { DemoDebts } from "./ledger";
-import { createDemoState } from "./seed";
+import { createDemoState, PLACEHOLDER_NAME } from "./seed";
 
 /*
  * The demo's stand-in for Firestore: plain in-memory data, so nothing is saved
@@ -28,17 +28,25 @@ export type DemoState = {
   vendorBoard: VendorBoard | null;
 };
 
-const state: DemoState = createDemoState();
+let state: DemoState = createDemoState(PLACEHOLDER_NAME);
 const listeners = new Set<() => void>();
+
+const notifyListeners = () => listeners.forEach((listener) => queueMicrotask(listener));
 
 export function getDemoState(): DemoState {
   return state;
 }
 
+/** Starts the household afresh with the visitor's name in it. */
+export function startDemo(visitorName: string): void {
+  state = createDemoState(visitorName);
+  notifyListeners();
+}
+
 /** Applies a change, then tells every listener, like a Firestore write. Throws before changing anything to reject. */
 export function updateDemoState(change: (state: DemoState) => void): void {
   change(state);
-  listeners.forEach((listener) => queueMicrotask(listener));
+  notifyListeners();
 }
 
 /** Calls `emit` with the current state now (asynchronously, like a first snapshot) and after every change. */

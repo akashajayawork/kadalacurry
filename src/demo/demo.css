@@ -29,3 +29,18 @@
 .demo-banner-restart:active {
   transform: scale(0.95);
 }
+
+/* Welcome dialog */
+
+.demo-welcome {
+  display: flex;
+  flex-direction: column;
+}
+
+.demo-welcome .dialog-title {
+  margin-top: 14px;
+}
+
+.demo-welcome .field {
+  margin-top: 20px;
+}

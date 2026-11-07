@@ -10,20 +10,21 @@ import type { DemoState } from "./store";
  * days" are always the real last five days.
  */
 
-const YOU = "demo-rohan";
+const YOU = "demo-you";
 const MEERA = "demo-meera";
 const ARJUN = "demo-arjun";
 const KABIR = "demo-kabir";
 
-/** The demo visitor: signed in as the house admin. */
-export const DEMO_USER: AppUser = {
-  uid: YOU,
-  displayName: "Rohan Mehta",
-  email: "rohan@example.com",
-};
+/** Used until the visitor tells us their name. */
+export const PLACEHOLDER_NAME = "there";
 
-const NAMES: Record<string, string> = {
-  [YOU]: "Rohan Mehta",
+/** The demo visitor, signed in as the house admin under the name they gave. */
+export function createDemoUser(name: string): AppUser {
+  return { uid: YOU, displayName: name, email: "you@example.com" };
+}
+
+/** Everyone but the visitor, whose name is filled in per visit. */
+const ROOMMATE_NAMES: Record<string, string> = {
   [MEERA]: "Meera Nair",
   [ARJUN]: "Arjun Pillai",
   [KABIR]: "Kabir Shah",
@@ -49,13 +50,15 @@ const OLDER_BILL: Array<[string, number]> = [
   [KABIR, 260],
 ];
 
-const share = (userId: string, amount: number): SettlementShare => ({
-  userId,
-  name: NAMES[userId],
-  amount,
-});
+/** The sample household, with the visitor (the admin) called `visitorName`. */
+export function createDemoState(visitorName: string): DemoState {
+  const NAMES: Record<string, string> = { [YOU]: visitorName, ...ROOMMATE_NAMES };
+  const share = (userId: string, amount: number): SettlementShare => ({
+    userId,
+    name: NAMES[userId],
+    amount,
+  });
 
-export function createDemoState(): DemoState {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -149,7 +152,7 @@ export function createDemoState(): DemoState {
   for (const [uid, name] of Object.entries(NAMES)) {
     people[uid] = { name, outstandingBalance: dues[uid] ?? 0 };
   }
-  people[YOU] = { ...people[YOU], role: "admin", email: DEMO_USER.email };
+  people[YOU] = { ...people[YOU], role: "admin", email: createDemoUser(visitorName).email };
 
   return {
     people,

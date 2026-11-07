@@ -13,7 +13,7 @@ npm run dev:demo             # the demo, at http://localhost:5174/demo/ (can run
 
 ## Demo
 
-`/demo/` is the full app with a sample household, for showing people around without an account. The visitor is the admin, with five days of meals, three past payments, current dues, roommates who owe them and one access request waiting for approval.
+`/demo/` is the full app with a sample household, for showing people around without an account. It first asks the visitor's name, then signs them in as the admin under that name, with five days of meals, three past payments, current dues, roommates who owe them and one access request waiting for approval.
 
 It's a separate build (`vite build --mode demo`) in which every Firebase service in `src/services/` is swapped for the in-memory copy in `src/demo/services/`. It never talks to Firebase, and since nothing is stored anywhere, the data resets whenever the page is left or refreshed. The sample data is in [src/demo/seed.ts](src/demo/seed.ts), dated relative to today. [src/demo/contract.ts](src/demo/contract.ts) makes `tsc` fail if a demo service stops matching its real one.
 

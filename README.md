@@ -21,7 +21,7 @@ To try things without touching real data, run it against the local emulators ins
 | --- | --- | --- |
 | `/` | Anyone | Try the demo or make a room. Signing in here ("Already in a room?") lists the rooms your account is in, on any device. |
 | `/create` | Anyone with Google | Signing in asks the main admin for a room. Once approved, they name it (permanent) and pick meals and prices. They become its room admin. |
-| `/admin` | Main admin only | Approve or decline room requests, open or delete any room, move the original house into a room. |
+| `/admin` | Main admin only | Approve or decline room requests, open or delete any room, move the original house into a room, see who has tried the demo. |
 | `/<room-id>` | Members | The app. Anyone else who signs in here asks to join and waits for the room admin. |
 | `/vendor.html?room=<room-id>` | Anyone with the link | The room's due and today's and tomorrow's meal counts, for the meal vendor. No names, no sign-in. |
 
@@ -77,11 +77,11 @@ If an emulator ever refuses to start with "port taken", an old one is still runn
 
 `/demo/` is the full app with a sample room, for showing people around without an account. It first asks the visitor's name, then signs them in as the room admin under that name, with five days of meals (breakfast, lunch and dinner), three past payments, current dues, roommates who owe them, one person waiting to join, and everything in room setup to try. Settling with Google Pay is simulated.
 
-It's a separate build (`vite build --mode demo`) in which every Firebase service a room uses is swapped for the in-memory copy in `src/demo/services/`. It never talks to Firebase, and since nothing is stored anywhere, the data resets whenever the page is left or refreshed. The sample data is in [src/demo/seed.ts](src/demo/seed.ts), dated relative to today. [src/demo/contract.ts](src/demo/contract.ts) makes `tsc` fail if a demo service stops matching its real one.
+It's a separate build (`vite build --mode demo`) in which every Firebase service a room uses is swapped for the in-memory copy in `src/demo/services/`. Nothing a visitor does is stored, so the data resets whenever the page is left or refreshed. The one thing sent anywhere is the name they type into the welcome popup: one small request ([src/demo/visitLog.ts](src/demo/visitLog.ts), no Firebase SDK) adds it to `demoVisits` for the main admin's **Demo visitors** list on `/admin`. The popup tells them so. The sample data is in [src/demo/seed.ts](src/demo/seed.ts), dated relative to today. [src/demo/contract.ts](src/demo/contract.ts) makes `tsc` fail if a demo service stops matching its real one.
 
 ## Buy me a coffee
 
-The button appears when the kadalacurry logo is tapped, on the demo (banner and welcome popup) and on `/admin`. Put your link in `BUY_ME_A_COFFEE_URL` in [src/config/support.ts](src/config/support.ts). Until then it shows as a dashed placeholder in development and not at all in production.
+The button appears when the kadalacurry logo is tapped, on the demo's welcome popup and on `/admin`. Put your link in `BUY_ME_A_COFFEE_URL` in [src/config/support.ts](src/config/support.ts). Until then it shows as a dashed placeholder in development and not at all in production.
 
 ## Branches and releases
 
@@ -116,6 +116,7 @@ The site is then at `https://<your-username>.github.io/<repo>/`, rooms at `…/<
 | `rooms/{roomId}/joinRequests/{uid}` | Left by someone who signed in to the room and isn't in it. Only the room admin sees these. |
 | `roomRequests/{uid}` | Someone asking the main admin for a room: `pending`, then `approved`. Used up when they create it. |
 | `userRooms/{uid}/rooms/{roomId}` | The rooms an account is in (`name`), so the home page can list them after signing in. Added when someone is in a room (or the room is created, or the house is moved); removed when they're removed or the room is deleted. Only rooms you're really in, and only you can read it. |
+| `demoVisits/{id}` | Names typed into the demo's welcome popup, with the time. Anyone can add one (only a short name and the server's time); only the main admin can read or delete them. |
 | `vendorBoards/{roomId}` | Public numbers for the room's vendor: meal counts per day and the total due. Kept up to date by the members' apps. |
 | `users`, `roommates`, `dailyOrders`, `debts`, `settlements`, `accessRequests`, `vendorBoard` | v1 (single house). Read-only to the main admin for the move; delete once moved. |
 

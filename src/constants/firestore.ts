@@ -5,6 +5,8 @@ export const COLLECTIONS = {
   vendorBoards: "vendorBoards",
   /** userRooms/{uid}/rooms/{roomId}: the rooms someone is in, for the home page. */
   userRooms: "userRooms",
+  /** demoVisits/{id}: names typed into the demo, for the main admin. */
+  demoVisits: "demoVisits",
 } as const;
 
 /** Collections inside each rooms/{roomId}. */

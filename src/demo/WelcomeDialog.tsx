@@ -4,6 +4,8 @@ import { CoffeeLink } from "@/components/brand";
 import { Dialog, Wordmark } from "@/components/ui";
 import { PATHS } from "@/constants/routes";
 
+import "./demo.css";
+
 /** Used if the browser closes the dialog without a name (e.g. a forced Escape). */
 const GUEST_NAME = "Guest";
 
@@ -35,7 +37,7 @@ function WelcomeForm({ onStart }: Pick<WelcomeDialogProps, "onStart">) {
       <Wordmark />
       <h2 className="dialog-title">Try the demo</h2>
       <p className="dialog-text">
-        You'll be the admin of a sample room: approve a roommate, set meal prices, order dinner and settle the bill with Google Pay. Nothing you do is saved.
+        You'll be the admin of a sample room: approve a roommate, set meal prices, order dinner and settle the bill with Google Pay. Nothing you do here is saved; the app's owner just sees the name you enter.
       </p>
 
       <label className="field">

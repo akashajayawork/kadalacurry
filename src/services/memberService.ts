@@ -5,7 +5,7 @@ import { DEFAULT_ROOMMATE_NAME } from "@/constants/app";
 import { ROOM_COLLECTIONS } from "@/constants/firestore";
 import type { Roommate } from "@/types";
 
-import { roomCollection, roomDoc } from "./refs";
+import { myRoomRef, roomCollection, roomDoc } from "./refs";
 
 /** Thrown when removing someone whose meals aren't paid for yet. */
 export class MemberHasDueError extends Error {
@@ -86,5 +86,7 @@ export async function removeMember(roomId: string, uid: string): Promise<void> {
     if (toRoommate(uid, snapshot.data()).outstandingBalance !== 0) throw new MemberHasDueError();
 
     transaction.delete(ref);
+    // Off their list of rooms on the home page too.
+    transaction.delete(myRoomRef(uid, roomId));
   });
 }

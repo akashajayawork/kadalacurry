@@ -1,10 +1,14 @@
 import { Check, Plus } from "lucide-react";
 import { useState } from "react";
 
+import { EASTER_EGGS } from "@/config/easterEggs";
 import { MEAL_LABELS } from "@/constants/meals";
 import type { Meal } from "@/types";
 import { formatRupees } from "@/utils/currency";
 import { tapFeedback } from "@/utils/haptics";
+
+/** Floats up instead of the price when set (the "meal-added" easter egg). */
+const ADDED_ART = EASTER_EGGS["meal-added"];
 
 type AddMealButtonProps = {
   meal: Meal;
@@ -48,7 +52,11 @@ export function AddMealButton({ meal, price, isSelected, disabled = false, onTog
         <span key={`fx-${celebration}`} aria-hidden="true">
           <span className="add-meal-ring" />
           <span className="add-meal-float" onAnimationEnd={() => setCelebration(0)}>
-            +{formatRupees(price)}
+            {ADDED_ART ? (
+              <img className="add-meal-float-art" src={ADDED_ART.src} alt="" draggable={false} />
+            ) : (
+              `+${formatRupees(price)}`
+            )}
           </span>
         </span>
       )}

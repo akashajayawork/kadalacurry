@@ -312,6 +312,17 @@
   animation: float-up 1000ms var(--ease-out) forwards;
 }
 
+/* The "meal-added" easter egg: a wide strip cut from the middle of a square image. */
+.add-meal-float-art {
+  display: block;
+  width: 62px;
+  /* Keeps it from being squeezed by the room beside the button. */
+  max-width: none;
+  height: 22px;
+  object-fit: cover;
+  user-select: none;
+}
+
 @keyframes ring-out {
   from {
     opacity: 0.6;
@@ -445,25 +456,24 @@
   animation: icon-in 320ms var(--ease-spring);
 }
 
-.save-bar-egg {
-  position: absolute;
-  right: 28px;
-  bottom: calc(100% + 6px);
-  animation: egg-pop 1800ms var(--ease-out) forwards;
+
+
+/* Saving an order: the coins blink twice. */
+.due-card-coin {
+  display: inline-flex;
+  flex-shrink: 0;
 }
 
-@keyframes egg-pop {
-  0% {
-    opacity: 0;
-    transform: translateY(10px) scale(0.6);
-  }
-  15%,
+.due-card-coin.is-blinking .easter-egg {
+  animation: coin-blink 520ms ease-in-out;
+}
+
+@keyframes coin-blink {
+  25%,
   75% {
-    opacity: 1;
-    transform: none;
+    opacity: 0.15;
   }
-  100% {
-    opacity: 0;
-    transform: translateY(-6px);
+  50% {
+    opacity: 1;
   }
 }

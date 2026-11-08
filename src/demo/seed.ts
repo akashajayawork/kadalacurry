@@ -14,10 +14,10 @@ import type { DemoState } from "./store";
 export const DEMO_ROOM_ID = "demo";
 
 const YOU = "demo-you";
-const MEERA = "demo-meera";
-const ARJUN = "demo-arjun";
-const KABIR = "demo-kabir";
-const RIYA = "demo-riya";
+const TYLER = "demo-tyler";
+const HULK = "demo-hulk";
+const PETER = "demo-peter";
+const DEADPOOL = "demo-deadpool";
 
 /** Used until the visitor tells us their name. */
 export const PLACEHOLDER_NAME = "there";
@@ -29,11 +29,11 @@ export function createDemoAccount(name: string): GoogleAccount {
 
 /** Everyone but the visitor, whose name is filled in per visit. */
 const ROOMMATE_NAMES: Record<string, string> = {
-  [MEERA]: "Meera Nair",
-  [ARJUN]: "Arjun Pillai",
-  [KABIR]: "Kabir Shah",
+  [TYLER]: "Tyler Durden",
+  [HULK]: "Hulk",
+  [PETER]: "Peter Parker",
   // Moved in recently and has paid up, so the visitor can try removing someone.
-  [RIYA]: "Riya Thomas",
+  [DEADPOOL]: "Deadpool",
 };
 
 const DEMO_MEALS: MealSettings = {
@@ -45,9 +45,9 @@ const DEMO_MEALS: MealSettings = {
 /** Who ate what, from five days ago (first) to tomorrow (last). b: breakfast, l: lunch, d: dinner. */
 const MEAL_PLAN: Record<string, string[]> = {
   [YOU]: ["bl", "bd", "bl", "ld", "bl", "b", ""],
-  [MEERA]: ["b", "bl", "bd", "bl", "b", "bld", "b"],
-  [ARJUN]: ["ld", "l", "bl", "b", "ld", "l", "bl"],
-  [KABIR]: ["bl", "", "l", "bld", "bl", "d", "l"],
+  [TYLER]: ["b", "bl", "bd", "bl", "b", "bld", "b"],
+  [HULK]: ["ld", "l", "bl", "b", "ld", "l", "bl"],
+  [PETER]: ["bl", "", "l", "bld", "bl", "d", "l"],
 };
 const FIRST_DAY = -5;
 
@@ -57,9 +57,9 @@ const LAST_BILL_DAY = -3;
 /** An earlier bill, before the five days shown, paid by Kabir. */
 const OLDER_BILL: Array<[string, number]> = [
   [YOU, 330],
-  [MEERA, 280],
-  [ARJUN, 300],
-  [KABIR, 260],
+  [TYLER, 280],
+  [HULK, 300],
+  [PETER, 260],
 ];
 
 /** The sample room, with the visitor (its admin) called `visitorName`. */
@@ -135,17 +135,17 @@ export function createDemoState(visitorName: string): DemoState {
   });
 
   const settlements: Settlement[] = [
-    bill("demo-bill-1", KABIR, olderShares, at(-6, 19, 30), "other"),
+    bill("demo-bill-1", HULK, olderShares, at(-6, 19, 30), "other"),
     {
       id: "demo-repay-1",
       kind: "repayment",
       amount: 300,
-      fromId: ARJUN,
-      fromName: NAMES[ARJUN],
-      toId: KABIR,
-      toName: NAMES[KABIR],
-      createdBy: ARJUN,
-      createdByName: NAMES[ARJUN],
+      fromId: TYLER,
+      fromName: NAMES[TYLER],
+      toId: PETER,
+      toName: NAMES[PETER],
+      createdBy: HULK,
+      createdByName: NAMES[HULK],
       dateId: formatDateId(at(-5, 20, 15)),
       createdAt: at(-5, 20, 15),
     },
@@ -190,10 +190,10 @@ export function createDemoState(visitorName: string): DemoState {
     debts,
     settlements,
     joinRequests: {
-      "demo-nikhil": {
-        uid: "demo-nikhil",
-        name: "Nikhil Varma",
-        email: "nikhil.varma@example.com",
+      "demo-ryan": {
+        uid: "demo-ryan",
+        name: "Ryan Gosling",
+        email: "ryan.gosling@supercool.com",
         photoURL: null,
         requestedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
       },

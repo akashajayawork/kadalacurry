@@ -1,78 +1,46 @@
-import { ArrowRight, ChevronRight } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { HousePlus, Sparkles } from "lucide-react";
 
-import { EasterEgg } from "@/components/ui";
+import { BrandButton, CoffeeLink } from "@/components/brand";
+import { EASTER_EGGS } from "@/config/easterEggs";
 import { PATHS } from "@/constants/routes";
-import { AuthCard } from "@/features/auth";
-import { getRecentRooms } from "@/features/rooms";
-import { getInitial } from "@/utils/name";
-import { toRoomId } from "@/utils/roomName";
 
+import { ChoiceTile } from "../components/ChoiceTile";
+import { YourRooms } from "../components/YourRooms";
 import "../landing.css";
 
-/** The home page: back to your rooms, open one by name, make one, or try the demo. */
+/** The home page: try the demo or make a room, and get back into your own rooms. */
 export function LandingPage() {
-  const [recentRooms] = useState(getRecentRooms);
-  const [roomName, setRoomName] = useState("");
-  const roomId = toRoomId(roomName);
-
-  const handleOpen = (event: FormEvent) => {
-    event.preventDefault();
-    if (roomId.length >= 3) window.location.assign(PATHS.room(roomId));
-  };
-
   return (
-    <AuthCard>
-      <EasterEgg slot="login" />
-      <h1 className="auth-title">Shared meal planner</h1>
-      <p className="auth-text">Order meals, split the bill and stay square</p>
+    <div className="landing">
+      <header className="landing-top">
+        <BrandButton />
+        <CoffeeLink variant="chip" />
+      </header>
 
-      {recentRooms.length > 0 && (
-        <ul className="landing-rooms" aria-label="Your rooms">
-          {recentRooms.map((room) => (
-            <li key={room.id}>
-              <a className="landing-room" href={PATHS.room(room.id)}>
-                <span className="avatar">{getInitial(room.name)}</span>
-                <span className="landing-room-name">{room.name}</span>
-                <ChevronRight size={18} />
-              </a>
-            </li>
-          ))}
-        </ul>
-      )}
+      <main className="landing-main">
+        <h1 className="landing-title">Shared meal planner</h1>
+        <p className="landing-text">Order meals, split the bill and stay square</p>
 
-      <form className="landing-open" onSubmit={handleOpen}>
-        <label className="field">
-          <span className="field-label">{recentRooms.length > 0 ? "Another room" : "Open your room"}</span>
-          <span className="landing-open-row">
-            <input
-              className="field-input"
-              value={roomName}
-              onChange={(event) => setRoomName(event.target.value)}
-              placeholder="Room name"
-              maxLength={40}
-              autoComplete="off"
-              autoCapitalize="off"
-              spellCheck={false}
-            />
-            <button
-              type="submit"
-              className="button button-primary landing-open-go"
-              disabled={roomId.length < 3}
-              aria-label="Open room"
-            >
-              <ArrowRight size={19} />
-            </button>
-          </span>
-        </label>
-      </form>
+        <div className="landing-choices">
+          <ChoiceTile
+            href={PATHS.demo}
+            icon={Sparkles}
+            art={EASTER_EGGS["demo-tile"]?.src}
+            title="Try the demo"
+            caption="No sign-in needed"
+            tone="warm"
+          />
+          <ChoiceTile
+            href={PATHS.create}
+            icon={HousePlus}
+            title="Make a room"
+            caption="For your house"
+            tone="dark"
+          />
+        </div>
 
-      <a className="button button-secondary button-block" href={PATHS.create}>
-        Make a room for your house
-      </a>
-      <a className="auth-link" href={PATHS.demo}>
-        Try the demo
-      </a>
-    </AuthCard>
+        <YourRooms />
+      </main>
+    </div>
   );
 }

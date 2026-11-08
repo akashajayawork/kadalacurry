@@ -2,7 +2,6 @@ import { Check, LoaderCircle } from "lucide-react";
 import { useState } from "react";
 
 import { ConfettiBurst } from "@/components/feedback";
-import { EasterEgg } from "@/components/ui";
 import type { PricedSelection } from "@/types";
 import { formatRupees } from "@/utils/currency";
 import { tapFeedback } from "@/utils/haptics";
@@ -37,10 +36,6 @@ export function SaveBar({ dayLabel, order, isDirty, saving, onSave }: SaveBarPro
         </span>
         <strong className="save-bar-total">{formatRupees(order.amount)}</strong>
       </div>
-
-      {celebration > 0 && (
-        <EasterEgg key={`egg-${celebration}`} slot="save-success" className="save-bar-egg" />
-      )}
 
       <button
         type="button"

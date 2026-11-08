@@ -26,6 +26,12 @@ export type Room = RoomSettings & {
   createdAt: Date | null;
 };
 
+/** Enough to list a room and link to it. */
+export type RoomSummary = {
+  id: string;
+  name: string;
+};
+
 /** Someone asking the main admin for permission to create a room. */
 export type RoomRequest = {
   uid: string;

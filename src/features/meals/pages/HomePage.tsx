@@ -27,6 +27,8 @@ export function HomePage() {
 
   const [activeDay, setActiveDay] = useState<OrderDay>("today");
   const [paidNotice, setPaidNotice] = useState<PaidNotice | null>(null);
+  // Bumped on every saved order: the due card's coins celebrate.
+  const [savedCount, setSavedCount] = useState(0);
   const deliveryDate = getDeliveryDate(activeDay);
   const dateId = formatDateId(deliveryDate);
   const dayLabel = activeDay === "today" ? "Today" : "Tomorrow";
@@ -63,13 +65,14 @@ export function HomePage() {
   const handleSave = async () => {
     const result = await submit();
     if (result === "paid") setPaidNotice({ meal: null });
+    if (result === "saved") setSavedCount((count) => count + 1);
     return result === "saved";
   };
 
   return (
     <div className="home">
       <Greeting name={user.displayName} />
-      <DueCard due={balance ?? 0} owedToYou={owedToYou} youOwe={youOwe} />
+      <DueCard due={balance ?? 0} owedToYou={owedToYou} youOwe={youOwe} celebrate={savedCount} />
 
       <section className="meals" aria-labelledby="meals-title">
         <div className="meals-header">

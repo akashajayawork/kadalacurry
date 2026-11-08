@@ -19,7 +19,7 @@ To try things without touching real data, run it against the local emulators ins
 
 | Page | Who | What |
 | --- | --- | --- |
-| `/` | Anyone | Back to rooms opened on this device, open a room by name, make a room, try the demo. |
+| `/` | Anyone | Try the demo or make a room. Signing in here ("Already in a room?") lists the rooms your account is in, on any device. |
 | `/create` | Anyone with Google | Signing in asks the main admin for a room. Once approved, they name it (permanent) and pick meals and prices. They become its room admin. |
 | `/admin` | Main admin only | Approve or decline room requests, open or delete any room, move the original house into a room. |
 | `/<room-id>` | Members | The app. Anyone else who signs in here asks to join and waits for the room admin. |
@@ -47,7 +47,7 @@ v1 kept one house in top-level collections (`users`, `roommates`, `dailyOrders`,
 1. **Publish the new rules** ([firestore.rules](firestore.rules)). The old app keeps working with them, so this can happen any time before the next step.
 2. **Release v2:** merge `develop` into `main` (see [Branches and releases](#branches-and-releases)). From now on the site serves v2.
 3. **Move the house:** open `/kadalacurry/admin`, sign in with the main admin account, and under **Original house** type the room's name (permanent!) and tap **Move into a new room**. It copies everyone with their dues, every order (at v1's prices: breakfast ₹50, lunch ₹60), the debts, the payment history and anyone still waiting for access, with you as the room admin.
-4. **Check the room**, then from room setup (tap your avatar) copy the **room link** for your roommates and the **vendor link** for the vendor (the old `vendor.html` link stops showing numbers). Everyone signs in with the same Google account as before and is straight in.
+4. **Check the room**, then from room setup (tap your avatar) copy the **room link** for your roommates and the **vendor link** for the vendor (the old `vendor.html` link stops showing numbers). Everyone signs in with the same Google account as before and is straight in. Roommates who only have the old address land on the home page: **Already in a room? Sign in** lists the room for them.
 5. **Clean up, once you're happy:** on `/admin`, **Delete the old copy**, then delete the v1 section at the end of `firestore.rules` (marked) and publish the rules again.
 
 ## Local testing with the Firebase emulators
@@ -115,6 +115,7 @@ The site is then at `https://<your-username>.github.io/<repo>/`, rooms at `…/<
 | `rooms/{roomId}/settlements/{id}` | Append-only payment history: `bill` (someone paid the whole house bill; `paidVia` is `gpay`, `upi` or `other`) or `repayment`. |
 | `rooms/{roomId}/joinRequests/{uid}` | Left by someone who signed in to the room and isn't in it. Only the room admin sees these. |
 | `roomRequests/{uid}` | Someone asking the main admin for a room: `pending`, then `approved`. Used up when they create it. |
+| `userRooms/{uid}/rooms/{roomId}` | The rooms an account is in (`name`), so the home page can list them after signing in. Added when someone is in a room (or the room is created, or the house is moved); removed when they're removed or the room is deleted. Only rooms you're really in, and only you can read it. |
 | `vendorBoards/{roomId}` | Public numbers for the room's vendor: meal counts per day and the total due. Kept up to date by the members' apps. |
 | `users`, `roommates`, `dailyOrders`, `debts`, `settlements`, `accessRequests`, `vendorBoard` | v1 (single house). Read-only to the main admin for the move; delete once moved. |
 

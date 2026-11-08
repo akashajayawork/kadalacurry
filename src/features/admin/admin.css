@@ -42,7 +42,11 @@
   font-size: 14px;
 }
 
-.setup-section > .setup-hint:last-child {
+.setup-intro {
+  margin-bottom: 12px;
+}
+
+.setup-outro {
   margin-top: 12px;
 }
 
@@ -61,6 +65,85 @@
   color: #ffffff;
   font-size: 12px;
   font-weight: 700;
+}
+
+/* Sections that open and close (everything the room admin sets up) */
+
+.setup-toggle-heading {
+  font: inherit;
+}
+
+.setup-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 32px;
+  text-align: left;
+}
+
+.setup-toggle-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+}
+
+.setup-toggle-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.setup-toggle-summary {
+  overflow: hidden;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  animation: fade-in 200ms ease both;
+}
+
+.setup-toggle-warning {
+  color: var(--color-highlight);
+  font-weight: 600;
+}
+
+.setup-toggle-chevron {
+  flex-shrink: 0;
+  color: var(--color-text-tertiary);
+  transition: transform 250ms var(--ease-out);
+}
+
+.setup-collapsible.is-open .setup-toggle-chevron {
+  transform: rotate(180deg);
+}
+
+.setup-collapsible-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 300ms var(--ease-out);
+}
+
+.setup-collapsible.is-open .setup-collapsible-body {
+  grid-template-rows: 1fr;
+}
+
+.setup-collapsible-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.setup-collapsible-content {
+  padding-top: 14px;
+}
+
+/* First in its section, so no gap above. */
+.setup-collapsible-content .vendor-upi-field {
+  margin-top: 0;
 }
 
 /* Room name and links */

@@ -23,7 +23,7 @@ import { ROOM_COLLECTIONS, V1_COLLECTIONS, type RoomCollection } from "@/constan
 import { V1_MEAL_SETTINGS } from "@/constants/meals";
 import type { GoogleAccount, MealPrices } from "@/types";
 
-import { asText, roomDoc, roomRef } from "./refs";
+import { asText, myRoomRef, roomDoc, roomRef } from "./refs";
 import { deleteInBatches, isRoomIdAvailable, RoomNameTakenError } from "./roomAdminService";
 
 const BATCH_SIZE = 400;
@@ -128,6 +128,12 @@ export async function moveV1House(
     ...users
       .filter((document) => document.id !== account.uid)
       .map((document) => ({ ref: inRoom(ROOM_COLLECTIONS.members, document.id), data: toMember(document) })),
+
+    // Everyone, you included, finds the room by signing in on the home page.
+    ...users.map((document) => ({
+      ref: myRoomRef(document.id, room.roomId),
+      data: { name: room.name, updatedAt: serverTimestamp() },
+    })),
 
     ...orders.map((document) => {
       const data = document.data();

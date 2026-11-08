@@ -136,6 +136,7 @@ beforeEach(async () => {
       createdAt: past,
     });
     batch.set(doc(db, "vendorBoards", ROOM), vendorBoard());
+    batch.set(doc(db, "userRooms", "bob", "rooms", ROOM), { name: "Kadala House", updatedAt: past });
 
     batch.set(doc(db, "rooms", OTHER_ROOM), room("Other Room", "olivia"));
     batch.set(doc(db, "rooms", OTHER_ROOM, "members", "olivia"), member("Olivia", 0));
@@ -209,6 +210,10 @@ function createRoomBatch(
       email: null,
       outstandingBalance: 0,
       joinedAt: serverTimestamp(),
+    });
+    batch.set(doc(db, "userRooms", uid, "rooms", roomId), {
+      name: roomData.name ?? "New Room",
+      updatedAt: serverTimestamp(),
     });
   }
   if (useRequest) batch.delete(doc(db, "roomRequests", uid));
@@ -538,6 +543,45 @@ describe("debts and payment history", () => {
 
   test("outsiders can't read the history", async () => {
     await assertFails(getDocs(collection(stranger(), "rooms", ROOM, "settlements")));
+  });
+});
+
+describe("your rooms (the home page list)", () => {
+  const entry = (name = "Kadala House") => ({ name, updatedAt: serverTimestamp() });
+  const myRoom = (db: Firestore, uid: string, roomId = ROOM) => doc(db, "userRooms", uid, "rooms", roomId);
+
+  test("members add rooms they're in to their own list, under the real name", async () => {
+    await assertSucceeds(setDoc(myRoom(alice(), "alice"), entry()));
+  });
+
+  test("not rooms they aren't in, not under another name, not for someone else", async () => {
+    await assertFails(setDoc(myRoom(stranger(), "stranger"), entry()));
+    await assertFails(setDoc(myRoom(alice(), "alice"), entry("Fake Name")));
+    await assertFails(setDoc(myRoom(alice(), "carol"), entry()));
+    await assertFails(setDoc(myRoom(alice(), "alice", OTHER_ROOM), entry("Other Room")));
+  });
+
+  test("only you can see your list", async () => {
+    await assertSucceeds(getDocs(collection(bob(), "userRooms", "bob", "rooms")));
+    await assertFails(getDocs(collection(alice(), "userRooms", "bob", "rooms")));
+    await assertFails(getDocs(collection(anonymous(), "userRooms", "bob", "rooms")));
+  });
+
+  test("the room admin takes it off someone's list when removing them; others can't", async () => {
+    await assertFails(deleteDoc(myRoom(olivia(), "bob")));
+    await assertFails(deleteDoc(myRoom(as("paidup"), "bob")));
+    await assertSucceeds(deleteDoc(myRoom(alice(), "bob")));
+  });
+
+  test("you can drop rooms from your own list", async () => {
+    await assertSucceeds(deleteDoc(myRoom(bob(), "bob")));
+  });
+
+  test("the main admin adds everyone's entry when moving the house into their own room", async () => {
+    const db = mainAdmin();
+    await assertSucceeds(createRoomBatch(db, "main", "akash-house", { useRequest: false, roomData: { name: "Akash House" } }));
+    await assertSucceeds(setDoc(doc(db, "userRooms", "v1-roommate", "rooms", "akash-house"), entry("Akash House")));
+    await assertFails(setDoc(doc(db, "userRooms", "v1-roommate", "rooms", ROOM), entry()));
   });
 });
 

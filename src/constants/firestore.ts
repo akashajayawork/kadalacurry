@@ -3,6 +3,8 @@ export const COLLECTIONS = {
   rooms: "rooms",
   roomRequests: "roomRequests",
   vendorBoards: "vendorBoards",
+  /** userRooms/{uid}/rooms/{roomId}: the rooms someone is in, for the home page. */
+  userRooms: "userRooms",
 } as const;
 
 /** Collections inside each rooms/{roomId}. */

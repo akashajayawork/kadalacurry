@@ -17,7 +17,7 @@ import { db } from "@/config/firebase";
 import { COLLECTIONS, ROOM_COLLECTIONS } from "@/constants/firestore";
 import type { GoogleAccount, Room, RoomSettings } from "@/types";
 
-import { roomCollection, roomDoc, roomRef } from "./refs";
+import { myRoomRef, roomCollection, roomDoc, roomRef } from "./refs";
 import { toRoom } from "./roomService";
 
 /** Firestore takes at most 500 writes in one batch. */
@@ -86,6 +86,10 @@ export async function createRoom(account: GoogleAccount, room: NewRoom): Promise
       outstandingBalance: 0,
       joinedAt: serverTimestamp(),
     });
+    transaction.set(myRoomRef(account.uid, room.roomId), {
+      name: room.name,
+      updatedAt: serverTimestamp(),
+    });
   });
 }
 
@@ -120,6 +124,10 @@ export async function deleteInBatches(refs: DocumentReference[]): Promise<void> 
  * debts, payment history, requests and the vendor board). Can't be undone.
  */
 export async function deleteRoom(roomId: string): Promise<void> {
+  // Take it off its members' lists of rooms first, while they can still be found.
+  const members = await getDocs(roomCollection(roomId, ROOM_COLLECTIONS.members));
+  await deleteInBatches(members.docs.map((member) => myRoomRef(member.id, roomId)));
+
   for (const name of Object.values(ROOM_COLLECTIONS)) {
     const snapshot = await getDocs(roomCollection(roomId, name));
     await deleteInBatches(snapshot.docs.map((document) => document.ref));

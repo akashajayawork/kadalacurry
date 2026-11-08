@@ -1,5 +1,7 @@
+import type { RoomSummary } from "@/types";
+
 /** Rooms opened on this device, newest first, so the home page can link back to them. */
-export type RecentRoom = { id: string; name: string };
+export type RecentRoom = RoomSummary;
 
 const STORAGE_KEY = "kadalacurry.recentRooms";
 const MAX_ROOMS = 5;

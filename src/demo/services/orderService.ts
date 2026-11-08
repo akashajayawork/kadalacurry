@@ -65,7 +65,7 @@ export async function saveOrder(
   dateId: string,
   selection: MealSelection
 ): Promise<void> {
-  await simulateLatency();
+  await simulateLatency(150);
 
   updateDemoState((state) => {
     const member = state.members[user.uid];

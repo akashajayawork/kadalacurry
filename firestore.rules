@@ -285,6 +285,30 @@ service cloud.firestore {
       }
     }
 
+    // ---------- Your rooms: userRooms/{uid}/rooms/{roomId} ----------
+    // The rooms someone is in, so the home page can list them after they sign
+    // in on any device. Only ever about rooms they're really in.
+
+    match /userRooms/{uid}/rooms/{roomId} {
+      function isEntryForRoom() {
+        return request.resource.data.keys().hasOnly(['name', 'updatedAt'])
+          && request.resource.data.name == getAfter(roomPath(roomId)).data.name;
+      }
+
+      allow read: if isSelf(uid);
+
+      // Added by their own app once they're in (or while creating the room),
+      // or by the main admin moving the original house into their own room.
+      allow create, update: if isEntryForRoom() && (
+        (isSelf(uid) && existsAfter(memberPath(roomId, uid)))
+        || (isMainAdmin() && getAfter(roomPath(roomId)).data.adminUid == request.auth.uid)
+      );
+
+      // Dropped by them, by the room admin removing them, or by the main admin
+      // deleting the room.
+      allow delete: if isSelf(uid) || isRoomAdmin(roomId) || isMainAdmin();
+    }
+
     // ---------- Vendor boards: public numbers for a room's meal vendor ----------
     // vendor.html?room=<roomId>. Only totals (meal counts per day and the house's
     // due), never names.

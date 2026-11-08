@@ -14,6 +14,7 @@ const DEMO_SERVICES = [
   'debtService',
   'joinRequestService',
   'memberService',
+  'myRoomsService',
   'orderService',
   'paymentService',
   'roomService',

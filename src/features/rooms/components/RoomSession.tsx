@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState, type PropsWithChildren } from "react";
 import { AccessErrorScreen, LoadingScreen, PendingScreen, useAccount, useAuth } from "@/features/auth";
 import { requestToJoin } from "@/services/joinRequestService";
 import { subscribeToMembership } from "@/services/memberService";
+import { saveMyRoom } from "@/services/myRoomsService";
 import { subscribeToRoom } from "@/services/roomService";
 import type { Room, Roommate } from "@/types";
 
@@ -76,11 +77,19 @@ export function RoomSession({ roomId, children }: RoomSessionProps) {
   }, [isPending, roomExists, roomId, account]);
 
   const member = membership.state === "member" ? membership.member : null;
+  const isMember = member !== null;
   const roomName = room?.name;
 
+  // Remember the room: on this device, and on the account so the home page
+  // can list it after signing in anywhere.
   useEffect(() => {
-    if (member && roomName) rememberRoom({ id: roomId, name: roomName });
-  }, [member, roomId, roomName]);
+    if (!isMember || !roomName) return;
+
+    rememberRoom({ id: roomId, name: roomName });
+    saveMyRoom(account.uid, roomId, roomName).catch((error) => {
+      console.error("Couldn't add the room to your list:", error);
+    });
+  }, [isMember, roomId, roomName, account.uid]);
 
   useEffect(() => {
     if (room === null) forgetRoom(roomId);

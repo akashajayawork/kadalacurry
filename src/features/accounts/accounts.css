@@ -277,3 +277,28 @@
   color: var(--color-accent);
   animation: pop 420ms var(--ease-spring);
 }
+
+/*
+ * The "history-download" easter egg on the PDF button. The drawing sits in the
+ * middle of a mostly white square, so the image is drawn larger and its
+ * margins cropped away; multiply lets the rest blend into the grey pill.
+ */
+.pdf-art {
+  position: relative;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  overflow: hidden;
+}
+
+.pdf-art img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  max-width: none;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: multiply;
+  user-select: none;
+}

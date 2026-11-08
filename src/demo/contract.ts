@@ -8,6 +8,7 @@ import type * as RealAuth from "@/services/authService";
 import type * as RealDebts from "@/services/debtService";
 import type * as RealJoinRequests from "@/services/joinRequestService";
 import type * as RealMembers from "@/services/memberService";
+import type * as RealMyRooms from "@/services/myRoomsService";
 import type * as RealOrders from "@/services/orderService";
 import type * as RealPayments from "@/services/paymentService";
 import type * as RealRooms from "@/services/roomService";
@@ -18,6 +19,7 @@ import type * as DemoAuth from "./services/authService";
 import type * as DemoDebts from "./services/debtService";
 import type * as DemoJoinRequests from "./services/joinRequestService";
 import type * as DemoMembers from "./services/memberService";
+import type * as DemoMyRooms from "./services/myRoomsService";
 import type * as DemoOrders from "./services/orderService";
 import type * as DemoPayments from "./services/paymentService";
 import type * as DemoRooms from "./services/roomService";
@@ -31,6 +33,7 @@ export type DemoServicesMatchReal = [
   Matches<typeof DemoDebts, typeof RealDebts>,
   Matches<typeof DemoJoinRequests, typeof RealJoinRequests>,
   Matches<typeof DemoMembers, typeof RealMembers>,
+  Matches<typeof DemoMyRooms, typeof RealMyRooms>,
   Matches<typeof DemoOrders, typeof RealOrders>,
   Matches<typeof DemoPayments, typeof RealPayments>,
   Matches<typeof DemoRooms, typeof RealRooms>,

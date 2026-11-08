@@ -5,7 +5,9 @@ import { useCurrentUser, useRoom, useRoommates } from "@/features/rooms";
 import { MemberHasDueError, removeMember } from "@/services/memberService";
 import type { Roommate } from "@/types";
 import { formatRupees } from "@/utils/currency";
-import { getInitial } from "@/utils/name";
+import { getFirstName, getInitial } from "@/utils/name";
+
+import { CollapsibleSection } from "./CollapsibleSection";
 
 /**
  * Room admin: everyone in the room, with a way to remove people. New people
@@ -44,14 +46,11 @@ export function MemberList() {
   };
 
   return (
-    <section className="setup-section" aria-labelledby="members-title">
-      <div className="setup-section-header">
-        <h3 id="members-title" className="setup-section-title">
-          Roommates
-        </h3>
-        {!loading && <span className="setup-count">{roommates.length}</span>}
-      </div>
-
+    <CollapsibleSection
+      title="Roommates"
+      badge={!loading && <span className="setup-count">{roommates.length}</span>}
+      summary={sorted.map((member) => getFirstName(member.name)).join(", ")}
+    >
       {error && <p className="form-error">{error}</p>}
 
       <ul className="member-list">
@@ -122,10 +121,10 @@ export function MemberList() {
         })}
       </ul>
 
-      <p className="setup-hint">
+      <p className="setup-hint setup-outro">
         To add someone, send them the room link. They sign in with Google and show up under Join
         requests.
       </p>
-    </section>
+    </CollapsibleSection>
   );
 }

@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import type { JoinRequest } from "@/types";
 
+import { CollapsibleSection } from "./CollapsibleSection";
 import { JoinRequestRow } from "./JoinRequestRow";
 
 type JoinRequestListProps = {
@@ -15,14 +16,13 @@ export function JoinRequestList({ requests }: JoinRequestListProps) {
   const [approvedNames, setApprovedNames] = useState<string[]>([]);
 
   return (
-    <section className="setup-section" aria-labelledby="join-requests-title">
-      <div className="setup-section-header">
-        <h3 id="join-requests-title" className="setup-section-title">
-          Join requests
-        </h3>
-        {requests.length > 0 && <span className="count-badge">{requests.length}</span>}
-      </div>
-
+    <CollapsibleSection
+      title="Join requests"
+      badge={requests.length > 0 && <span className="count-badge">{requests.length}</span>}
+      summary={requests.length > 0 ? `${requests.length} waiting to join` : "No one's waiting"}
+      // Open straight away when someone's waiting: that's usually why the sheet was opened.
+      defaultOpen={requests.length > 0}
+    >
       {approvedNames.map((name, index) => (
         <p key={`${name}-${index}`} className="access-approved">
           <Check size={16} strokeWidth={2.6} />
@@ -46,6 +46,6 @@ export function JoinRequestList({ requests }: JoinRequestListProps) {
           ))}
         </ul>
       )}
-    </section>
+    </CollapsibleSection>
   );
 }

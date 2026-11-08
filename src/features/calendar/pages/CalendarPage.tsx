@@ -2,7 +2,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { EasterEgg } from "@/components/ui";
-import { useCurrentUser } from "@/features/auth";
+import { useCurrentUser } from "@/features/rooms";
 import { formatMonth } from "@/utils/date";
 
 import { CalendarGrid } from "../components/CalendarGrid";

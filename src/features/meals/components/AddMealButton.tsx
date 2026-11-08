@@ -1,18 +1,25 @@
 import { Check, Plus } from "lucide-react";
 import { useState } from "react";
 
-import { MEAL_LABELS, MEAL_PRICES } from "@/constants/meals";
+import { EASTER_EGGS } from "@/config/easterEggs";
+import { MEAL_LABELS } from "@/constants/meals";
 import type { Meal } from "@/types";
 import { formatRupees } from "@/utils/currency";
 import { tapFeedback } from "@/utils/haptics";
 
+/** Floats up instead of the price when set (the "meal-added" easter egg). */
+const ADDED_ART = EASTER_EGGS["meal-added"];
+
 type AddMealButtonProps = {
   meal: Meal;
+  price: number;
   isSelected: boolean;
+  /** While the saved order is still loading. */
+  disabled?: boolean;
   onToggle: () => void;
 };
 
-export function AddMealButton({ meal, isSelected, onToggle }: AddMealButtonProps) {
+export function AddMealButton({ meal, price, isSelected, disabled = false, onToggle }: AddMealButtonProps) {
   // Bumped on every add so the celebration replays; reset when it finishes.
   const [celebration, setCelebration] = useState(0);
   const label = MEAL_LABELS[meal].toLowerCase();
@@ -33,6 +40,7 @@ export function AddMealButton({ meal, isSelected, onToggle }: AddMealButtonProps
       className={`add-meal ${isSelected ? "is-added" : ""} ${celebration ? "is-celebrating" : ""}`}
       onClick={handleClick}
       aria-pressed={isSelected}
+      disabled={disabled}
       aria-label={isSelected ? `Remove ${label}` : `Add ${label}`}
     >
       <span key={`icon-${celebration}`} className="add-meal-icon">
@@ -44,7 +52,11 @@ export function AddMealButton({ meal, isSelected, onToggle }: AddMealButtonProps
         <span key={`fx-${celebration}`} aria-hidden="true">
           <span className="add-meal-ring" />
           <span className="add-meal-float" onAnimationEnd={() => setCelebration(0)}>
-            +{formatRupees(MEAL_PRICES[meal])}
+            {ADDED_ART ? (
+              <img className="add-meal-float-art" src={ADDED_ART.src} alt="" draggable={false} />
+            ) : (
+              `+${formatRupees(price)}`
+            )}
           </span>
         </span>
       )}

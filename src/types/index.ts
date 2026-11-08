@@ -1,6 +1,7 @@
-export type * from "./accessRequest";
 export type * from "./debt";
+export type * from "./joinRequest";
 export type * from "./order";
+export type * from "./room";
 export type * from "./roommate";
 export type * from "./settlement";
 export type * from "./user";

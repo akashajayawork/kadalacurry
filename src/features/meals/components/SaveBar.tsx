@@ -2,24 +2,24 @@ import { Check, LoaderCircle } from "lucide-react";
 import { useState } from "react";
 
 import { ConfettiBurst } from "@/components/feedback";
-import { EasterEgg } from "@/components/ui";
-import type { MealSelection } from "@/types";
+import type { PricedSelection } from "@/types";
 import { formatRupees } from "@/utils/currency";
 import { tapFeedback } from "@/utils/haptics";
-import { calculateOrderAmount, countSelectedMeals } from "@/utils/meals";
+import { countSelectedMeals } from "@/utils/meals";
 
 type SaveBarProps = {
   dayLabel: string;
-  selection: MealSelection;
+  /** The current selection, priced. */
+  order: PricedSelection;
   isDirty: boolean;
   saving: boolean;
   onSave: () => Promise<boolean>;
 };
 
 /** Order total plus the save button. Sticks above the tab bar while scrolling. */
-export function SaveBar({ dayLabel, selection, isDirty, saving, onSave }: SaveBarProps) {
+export function SaveBar({ dayLabel, order, isDirty, saving, onSave }: SaveBarProps) {
   const [celebration, setCelebration] = useState(0);
-  const mealCount = countSelectedMeals(selection);
+  const mealCount = countSelectedMeals(order);
 
   const handleSave = async () => {
     if (await onSave()) {
@@ -34,12 +34,8 @@ export function SaveBar({ dayLabel, selection, isDirty, saving, onSave }: SaveBa
         <span className="save-bar-label">
           {dayLabel} · {mealCount} {mealCount === 1 ? "meal" : "meals"}
         </span>
-        <strong className="save-bar-total">{formatRupees(calculateOrderAmount(selection))}</strong>
+        <strong className="save-bar-total">{formatRupees(order.amount)}</strong>
       </div>
-
-      {celebration > 0 && (
-        <EasterEgg key={`egg-${celebration}`} slot="save-success" className="save-bar-egg" />
-      )}
 
       <button
         type="button"

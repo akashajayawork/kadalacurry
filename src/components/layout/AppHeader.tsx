@@ -1,7 +1,8 @@
 import { LogOut } from "lucide-react";
 import { useState, type ReactNode } from "react";
 
-import { Dialog, Wordmark } from "@/components/ui";
+import { BrandButton } from "@/components/brand";
+import { Dialog } from "@/components/ui";
 import { getInitial } from "@/utils/name";
 
 import "./AppHeader.css";
@@ -9,7 +10,7 @@ import "./AppHeader.css";
 type AppHeaderProps = {
   userName: string | null;
   userEmail: string | null;
-  /** A number shown on the avatar, e.g. people waiting for access. Hidden at 0. */
+  /** A number shown on the avatar, e.g. people waiting to join. Hidden at 0. */
   badgeCount?: number;
   /** Extra sections for the account sheet, shown above Sign out. */
   accountExtras?: ReactNode;
@@ -28,13 +29,13 @@ export function AppHeader({
   return (
     <header className="app-header">
       <div className="app-header-inner">
-        <Wordmark />
+        <BrandButton />
 
         <button
           type="button"
           className="avatar app-header-avatar"
           onClick={() => setAccountOpen(true)}
-          aria-label={badgeCount > 0 ? `Account, ${badgeCount} waiting for access` : "Account"}
+          aria-label={badgeCount > 0 ? `Account, ${badgeCount} waiting to join` : "Account"}
         >
           {getInitial(userName)}
           {badgeCount > 0 && (

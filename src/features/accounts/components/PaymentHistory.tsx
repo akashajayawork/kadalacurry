@@ -1,11 +1,15 @@
 import { ArrowLeftRight, Download, LoaderCircle, Receipt } from "lucide-react";
 
+import { EASTER_EGGS } from "@/config/easterEggs";
 import type { Settlement } from "@/types";
 import { formatRupees } from "@/utils/currency";
 import { formatShortDate, formatTime } from "@/utils/date";
 
 import { usePaymentHistoryDownload } from "../hooks/usePaymentHistoryDownload";
-import { describeSettlement } from "../utils/settlements";
+import { describeSettlement, PAID_VIA_LABELS } from "../utils/settlements";
+
+/** Shown beside "PDF" instead of the download arrow when set (the "history-download" easter egg). */
+const DOWNLOAD_ART = EASTER_EGGS["history-download"];
 
 type PaymentHistoryProps = {
   settlements: Settlement[];
@@ -28,7 +32,15 @@ export function PaymentHistory({ settlements, loading, currentUserId }: PaymentH
           onClick={download}
           disabled={downloading || settlements.length === 0}
         >
-          {downloading ? <LoaderCircle size={16} className="spin" /> : <Download size={16} />}
+          {downloading ? (
+            <LoaderCircle size={16} className="spin" />
+          ) : DOWNLOAD_ART ? (
+            <span className="pdf-art" aria-hidden="true">
+              <img src={DOWNLOAD_ART.src} alt="" draggable={false} />
+            </span>
+          ) : (
+            <Download size={16} />
+          )}
           PDF
         </button>
       </div>
@@ -54,6 +66,7 @@ export function PaymentHistory({ settlements, loading, currentUserId }: PaymentH
                   {settlement.createdAt && (
                     <span className="history-meta">
                       {formatShortDate(settlement.createdAt)} · {formatTime(settlement.createdAt)}
+                      {settlement.kind === "bill" && settlement.paidVia && ` · ${PAID_VIA_LABELS[settlement.paidVia]}`}
                     </span>
                   )}
                 </span>

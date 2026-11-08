@@ -2,6 +2,7 @@ import { LoaderCircle } from "lucide-react";
 import { useState } from "react";
 
 import { Dialog } from "@/components/ui";
+import { useRoom } from "@/features/rooms";
 import { NothingToSettleError, settleDebt } from "@/services/settlementService";
 import type { Debt, Person } from "@/types";
 import { formatRupees } from "@/utils/currency";
@@ -50,6 +51,7 @@ function SettleDebtContent({
   onBusyChange,
   onClose,
 }: SettleDebtContentProps) {
+  const { roomId } = useRoom();
   const [settling, setSettling] = useState(false);
   const [error, setError] = useState("");
   const [settledAmount, setSettledAmount] = useState<number | null>(null);
@@ -63,7 +65,7 @@ function SettleDebtContent({
     onBusyChange(true);
 
     try {
-      setSettledAmount(await settleDebt(currentUser, otherUser));
+      setSettledAmount(await settleDebt(roomId, currentUser, otherUser));
       tapFeedback([12, 60, 18]);
     } catch (settleError) {
       console.error("Settling the debt failed:", settleError);

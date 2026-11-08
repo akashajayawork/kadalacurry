@@ -6,9 +6,11 @@ type DueCardProps = {
   due: number;
   owedToYou: number;
   youOwe: number;
+  /** Goes up by one each time an order is saved: the coins blink. */
+  celebrate?: number;
 };
 
-export function DueCard({ due, owedToYou, youOwe }: DueCardProps) {
+export function DueCard({ due, owedToYou, youOwe, celebrate = 0 }: DueCardProps) {
   return (
     <section className="due-card card" aria-label="Your due">
       <div>
@@ -23,7 +25,10 @@ export function DueCard({ due, owedToYou, youOwe }: DueCardProps) {
         )}
       </div>
 
-      <EasterEgg slot="home-due" />
+      {/* A new key replays the blink each time. */}
+      <span key={celebrate} className={`due-card-coin ${celebrate > 0 ? "is-blinking" : ""}`}>
+        <EasterEgg slot="home-due" />
+      </span>
     </section>
   );
 }

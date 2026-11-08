@@ -1,0 +1,82 @@
+.brand-button {
+  display: inline-flex;
+  align-items: center;
+  margin: -6px -8px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  transition: transform 160ms var(--ease-out);
+}
+
+.brand-button:active {
+  transform: scale(0.95);
+}
+
+/* About */
+
+.about {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.about-wordmark {
+  font-size: 26px;
+}
+
+.about-version {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--color-text-tertiary);
+}
+
+.about .dialog-actions {
+  width: 100%;
+}
+
+.about-link {
+  padding: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+/* Buy me a coffee: the one warm yellow in the app. */
+
+.coffee-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #ffdd00;
+  color: #1d1d1f;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: transform 160ms var(--ease-out);
+}
+
+.coffee-link:active {
+  transform: scale(0.97);
+}
+
+.coffee-link-button {
+  width: 100%;
+  min-height: 50px;
+  padding: 0 22px;
+  border-radius: var(--radius-pill);
+  font-size: 16px;
+}
+
+.coffee-link-chip {
+  height: 28px;
+  padding: 0 12px;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+}
+
+.coffee-link.is-placeholder {
+  background: transparent;
+  border: 1.5px dashed rgba(0, 0, 0, 0.2);
+  color: var(--color-text-secondary);
+  cursor: help;
+}

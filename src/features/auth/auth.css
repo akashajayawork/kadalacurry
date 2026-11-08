@@ -21,7 +21,7 @@
   animation: rise-in 500ms var(--ease-out) both;
 }
 
-.auth-wordmark {
+.auth-wordmark .wordmark {
   font-size: 20px;
 }
 
@@ -84,4 +84,28 @@
     opacity: 0.25;
     transform: scale(0.7);
   }
+}
+
+/* A quiet link-style button under the main actions. */
+.auth-link {
+  padding: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.auth-text strong {
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+}
+
+.auth-room-link {
+  max-width: 100%;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-muted);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  overflow-wrap: anywhere;
 }

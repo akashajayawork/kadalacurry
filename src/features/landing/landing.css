@@ -1,0 +1,303 @@
+.landing {
+  display: flex;
+  flex-direction: column;
+  max-width: 440px;
+  min-height: 100svh;
+  margin: 0 auto;
+  padding: calc(14px + var(--safe-top)) var(--page-padding) calc(28px + var(--safe-bottom));
+}
+
+.landing-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 40px;
+}
+
+.landing-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: center;
+  padding-bottom: 6vh;
+  animation: rise-in 500ms var(--ease-out) both;
+}
+
+.landing-title {
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+
+.landing-text {
+  margin-top: 8px;
+  font-size: 17px;
+  color: var(--color-text-secondary);
+}
+
+/* The two choices */
+
+.landing-choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.choice {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  aspect-ratio: 1;
+  padding: 18px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  transition:
+    transform 160ms var(--ease-out),
+    box-shadow 200ms ease;
+}
+
+.choice:active {
+  transform: scale(0.96);
+}
+
+.choice-icon {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+}
+
+.choice-warm .choice-icon {
+  background: rgba(255, 90, 31, 0.12);
+  color: var(--color-highlight);
+}
+
+/*
+ * The "demo-tile" easter egg, in its own colours: a plain white circle with a
+ * hairline edge instead of the tinted one, and the picture cut to the circle.
+ */
+.choice-icon.has-art {
+  background: var(--color-surface);
+  box-shadow: inset 0 0 0 1px var(--color-border);
+}
+
+.choice-art {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: contain;
+  user-select: none;
+}
+
+.choice-dark .choice-icon {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.choice-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.choice-caption {
+  margin-top: 2px;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+/*
+ * The reward: the tile pops and floods dark from its icon (like the Add button
+ * turning dark when a meal is added), the icon bounces, a ring and confetti
+ * burst out of it.
+ */
+
+/* The fill sits under the tile's content without clipping the confetti. */
+.choice {
+  isolation: isolate;
+}
+
+.choice.is-celebrating {
+  animation: pop 420ms var(--ease-spring);
+}
+
+.choice-fill {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--color-primary);
+  /* Starts as a dot under the icon's centre (18px padding + half of 52px). */
+  clip-path: circle(0 at 44px 44px);
+  animation: choice-fill 520ms cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+@keyframes choice-fill {
+  to {
+    clip-path: circle(150% at 44px 44px);
+  }
+}
+
+.choice-title,
+.choice-caption,
+.choice-icon {
+  transition:
+    color 260ms ease 80ms,
+    background-color 260ms ease 80ms;
+}
+
+.choice.is-celebrating .choice-title {
+  color: var(--color-on-primary);
+}
+
+.choice.is-celebrating .choice-caption {
+  color: rgba(255, 255, 255, 0.68);
+}
+
+/* On the dark fill the icon circle turns light, keeping its colour inside. */
+.choice.is-celebrating .choice-icon {
+  background: var(--color-on-primary);
+}
+
+.choice-dark.is-celebrating .choice-icon {
+  color: var(--color-primary);
+}
+
+.choice.is-celebrating .choice-icon svg,
+.choice.is-celebrating .choice-art {
+  animation: icon-in 360ms var(--ease-spring);
+}
+
+.choice-ring {
+  position: absolute;
+  inset: 0;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: choice-ring-out 600ms var(--ease-out) forwards;
+}
+
+/* The dark tile's ring would vanish into the fill. */
+.choice-dark .choice-ring {
+  border-color: rgba(255, 255, 255, 0.85);
+}
+
+@keyframes choice-ring-out {
+  from {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+
+/* Rooms opened on this device before */
+
+.landing-rooms {
+  margin-top: 28px;
+}
+
+.landing-rooms-title {
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.landing-rooms-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.landing-signout {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.landing-room-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.landing-rooms-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+/* Signed out: a quiet way back in for people who already have a room. */
+.landing-signin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 48px;
+  margin-top: 12px;
+  border-radius: var(--radius-pill);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+  transition: background-color 200ms ease;
+}
+
+.landing-signin:active {
+  background: var(--color-surface-muted);
+}
+
+.landing-rooms-title + .landing-room-list + .landing-signin {
+  margin-top: 16px;
+}
+
+.landing-room {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+  font-size: 16px;
+  font-weight: 600;
+  transition: transform 160ms var(--ease-out);
+}
+
+.landing-room:active {
+  transform: scale(0.98);
+}
+
+.landing-room .avatar {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.landing-room-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.landing-room svg {
+  color: var(--color-text-tertiary);
+}

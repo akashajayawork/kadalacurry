@@ -201,3 +201,104 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
+
+/* Paying the vendor (settle total due) */
+
+.pay-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.pay-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.pay-hint {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.pay-hint strong {
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+}
+
+.pay-number {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+}
+
+.pay-number strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 19px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.pay-number .pill-button {
+  background: var(--color-surface);
+}
+
+.pay-confirm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.pay-confirm .dialog-title {
+  margin-top: 14px;
+  padding-right: 0;
+}
+
+.pay-confirm .dialog-actions {
+  width: 100%;
+}
+
+.pay-confirm-icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(0, 113, 227, 0.1);
+  color: var(--color-accent);
+  animation: pop 420ms var(--ease-spring);
+}
+
+/*
+ * The "history-download" easter egg on the PDF button. The drawing sits in the
+ * middle of a mostly white square, so the image is drawn larger and its
+ * margins cropped away; multiply lets the rest blend into the grey pill.
+ */
+.pdf-art {
+  position: relative;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  overflow: hidden;
+}
+
+.pdf-art img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  max-width: none;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: multiply;
+  user-select: none;
+}

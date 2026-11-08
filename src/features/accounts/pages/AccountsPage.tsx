@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 
 import { DEFAULT_ROOMMATE_NAME } from "@/constants/app";
-import { useCurrentUser } from "@/features/auth";
+import { useCurrentUser, useRoommates } from "@/features/rooms";
 import type { Debt, Person } from "@/types";
 
 import { DebtList } from "../components/DebtList";
@@ -11,7 +11,6 @@ import { SettleDebtDialog } from "../components/SettleDebtDialog";
 import { TotalDueCard } from "../components/TotalDueCard";
 import { useDebts } from "../hooks/useDebts";
 import { useRecentSettlements } from "../hooks/useRecentSettlements";
-import { useRoommates } from "../hooks/useRoommates";
 import "../accounts.css";
 
 export function AccountsPage() {
@@ -23,9 +22,14 @@ export function AccountsPage() {
   const [billDialogOpen, setBillDialogOpen] = useState(false);
   const [selectedDebt, setSelectedDebt] = useState<Debt | null>(null);
 
+  // Current members first; debts remember the names of anyone who has left.
   const namesById = useMemo(
-    () => new Map(roommates.map((roommate) => [roommate.id, roommate.name])),
-    [roommates]
+    () =>
+      new Map([
+        ...debts.flatMap((debt) => (debt.otherName ? [[debt.otherUserId, debt.otherName] as const] : [])),
+        ...roommates.map((roommate) => [roommate.id, roommate.name] as const),
+      ]),
+    [debts, roommates]
   );
   const getName = (userId: string) => namesById.get(userId) ?? DEFAULT_ROOMMATE_NAME;
   const me: Person = {

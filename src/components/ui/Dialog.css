@@ -68,6 +68,10 @@
   margin-top: 22px;
 }
 
+.dialog-actions-tight {
+  margin-top: 8px;
+}
+
 @keyframes dialog-in {
   from {
     opacity: 0;

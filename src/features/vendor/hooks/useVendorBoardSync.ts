@@ -1,9 +1,10 @@
 import { useEffect } from "react";
 
+import { MEALS } from "@/constants/meals";
+import { subscribeToRoommates } from "@/services/memberService";
 import { subscribeToOrdersOnDates } from "@/services/orderService";
-import { subscribeToRoommates } from "@/services/roommateService";
 import { saveVendorBoard, subscribeToVendorBoard } from "@/services/vendorService";
-import type { DailyOrder, Roommate, VendorBoard } from "@/types";
+import type { DailyOrder, Meal, Roommate, VendorBoard } from "@/types";
 import { addDays, formatDateId, parseDateId } from "@/utils/date";
 
 import { countMeals, getBoardUpdate, sumDues } from "../utils";
@@ -12,13 +13,16 @@ import { countMeals, getBoardUpdate, sumDues } from "../utils";
 const RETRY_MS = 30_000;
 
 /**
- * Keeps the public vendor board in step with the real data (today's and
- * tomorrow's meal counts, and the house's total due). It runs in every
+ * Keeps the room's public vendor board in step with the real data (today's
+ * and tomorrow's meal counts, and the house's total due). It runs in every
  * roommate's app, so the board stays current without a server.
+ *
+ * @param mealsKey the room's meals, comma-separated (a string so the effect only restarts when they change)
  */
-export function useVendorBoardSync(todayId: string) {
+export function useVendorBoardSync(roomId: string, roomName: string, mealsKey: string, todayId: string) {
   useEffect(() => {
     const tomorrowId = formatDateId(addDays(parseDateId(todayId), 1));
+    const meals = MEALS.filter((meal) => mealsKey.split(",").includes(meal)) as Meal[];
     let orders: DailyOrder[] | null = null;
     let roommates: Roommate[] | null = null;
     let board: VendorBoard | null | undefined; // undefined until it has loaded
@@ -49,10 +53,14 @@ export function useVendorBoardSync(todayId: string) {
 
       const update = getBoardUpdate(
         board,
-        sumDues(roommates),
         {
-          [todayId]: countMeals(orders, todayId),
-          [tomorrowId]: countMeals(orders, tomorrowId),
+          roomName,
+          meals,
+          totalDue: sumDues(roommates),
+          days: {
+            [todayId]: countMeals(orders, todayId),
+            [tomorrowId]: countMeals(orders, tomorrowId),
+          },
         },
         todayId
       );
@@ -62,7 +70,7 @@ export function useVendorBoardSync(todayId: string) {
       if (!update || writeKey === lastWrite) return;
       lastWrite = writeKey;
 
-      saveVendorBoard(update.totalDue, update.days, update.removeDays).catch(retryLater);
+      saveVendorBoard(roomId, update).catch(retryLater);
     };
 
     function start() {
@@ -73,6 +81,7 @@ export function useVendorBoardSync(todayId: string) {
 
       unsubscribers = [
         subscribeToOrdersOnDates(
+          roomId,
           [todayId, tomorrowId],
           (value) => {
             orders = value;
@@ -80,14 +89,22 @@ export function useVendorBoardSync(todayId: string) {
           },
           retryLater
         ),
-        subscribeToRoommates((value) => {
-          roommates = value;
-          sync();
-        }, retryLater),
-        subscribeToVendorBoard((value) => {
-          board = value;
-          sync();
-        }, retryLater),
+        subscribeToRoommates(
+          roomId,
+          (value) => {
+            roommates = value;
+            sync();
+          },
+          retryLater
+        ),
+        subscribeToVendorBoard(
+          roomId,
+          (value) => {
+            board = value;
+            sync();
+          },
+          retryLater
+        ),
       ];
     }
 
@@ -98,5 +115,5 @@ export function useVendorBoardSync(todayId: string) {
       window.clearTimeout(retryTimer);
       unsubscribeAll();
     };
-  }, [todayId]);
+  }, [roomId, roomName, mealsKey, todayId]);
 }

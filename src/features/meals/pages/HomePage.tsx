@@ -2,9 +2,10 @@ import { useState } from "react";
 
 import { MEALS } from "@/constants/meals";
 import { summarizeDebts, useDebts, useUserBalance } from "@/features/accounts";
-import { useCurrentUser } from "@/features/auth";
+import { useCurrentUser, useRoom } from "@/features/rooms";
 import type { Meal } from "@/types";
 import { formatDateId, formatLongDate } from "@/utils/date";
+import { getMealPrice, priceSelection } from "@/utils/meals";
 
 import { DaySwitch } from "../components/DaySwitch";
 import { DueCard } from "../components/DueCard";
@@ -20,11 +21,14 @@ import "../meals.css";
 
 export function HomePage() {
   const user = useCurrentUser();
+  const { room } = useRoom();
   const balance = useUserBalance(user.uid);
   const { owedToYou, youOwe } = summarizeDebts(useDebts(user.uid));
 
   const [activeDay, setActiveDay] = useState<OrderDay>("today");
   const [paidNotice, setPaidNotice] = useState<PaidNotice | null>(null);
+  // Bumped on every saved order: the due card's coins celebrate.
+  const [savedCount, setSavedCount] = useState(0);
   const deliveryDate = getDeliveryDate(activeDay);
   const dateId = formatDateId(deliveryDate);
   const dayLabel = activeDay === "today" ? "Today" : "Tomorrow";
@@ -35,15 +39,23 @@ export function HomePage() {
   ]);
   const dayOrders = sharedOrders.filter((order) => order.deliveryDate === dateId);
 
-  const { selection, savedSelection, isDirty, saving, toggleMeal, submit } = useMealOrder(
+  const { selection, saved, loaded, isDirty, saving, toggleMeal, submit } = useMealOrder(
     user,
     dateId
   );
+  const order = priceSelection(selection, room.meals, saved);
+
+  // The room's meals, plus any meal it has stopped that's still on your saved order.
+  const visibleMeals = MEALS.filter((meal) => room.meals[meal].enabled || saved[meal]);
 
   const handleToggle = (meal: Meal) => {
     // Paid meals can't be removed (the due can't go below zero).
     // Until the due has loaded, the save itself still checks.
-    if (selection[meal] && balance !== null && !canRemoveMeal(balance, selection, savedSelection, meal)) {
+    if (
+      selection[meal] &&
+      balance !== null &&
+      !canRemoveMeal(balance, selection, saved, meal, room.meals)
+    ) {
       setPaidNotice({ meal });
       return;
     }
@@ -53,13 +65,14 @@ export function HomePage() {
   const handleSave = async () => {
     const result = await submit();
     if (result === "paid") setPaidNotice({ meal: null });
+    if (result === "saved") setSavedCount((count) => count + 1);
     return result === "saved";
   };
 
   return (
     <div className="home">
       <Greeting name={user.displayName} />
-      <DueCard due={balance ?? 0} owedToYou={owedToYou} youOwe={youOwe} />
+      <DueCard due={balance ?? 0} owedToYou={owedToYou} youOwe={youOwe} celebrate={savedCount} />
 
       <section className="meals" aria-labelledby="meals-title">
         <div className="meals-header">
@@ -71,13 +84,16 @@ export function HomePage() {
         </div>
 
         <div className="meal-list">
-          {MEALS.map((meal) => (
+          {visibleMeals.map((meal) => (
             <MealCard
               key={meal}
               meal={meal}
-              orders={dayOrders.filter((order) => order[meal])}
+              price={getMealPrice(meal, room.meals, saved)}
+              discontinued={!room.meals[meal].enabled}
+              orders={dayOrders.filter((dayOrder) => dayOrder[meal])}
               currentUserId={user.uid}
               isSelected={selection[meal]}
+              disabled={!loaded}
               onToggle={() => handleToggle(meal)}
             />
           ))}
@@ -85,7 +101,7 @@ export function HomePage() {
 
         <SaveBar
           dayLabel={dayLabel}
-          selection={selection}
+          order={order}
           isDirty={isDirty}
           saving={saving}
           onSave={handleSave}

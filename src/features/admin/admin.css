@@ -1,4 +1,11 @@
-.access-requests {
+/* Room setup: the room part of the account sheet. */
+
+.room-panel {
+  width: 100%;
+  text-align: left;
+}
+
+.setup-section {
   width: 100%;
   margin-top: 20px;
   padding-top: 18px;
@@ -6,16 +13,45 @@
   text-align: left;
 }
 
-.access-requests-header {
+.setup-section-header {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 12px;
 }
 
-.access-requests-title {
+.setup-section-title {
   font-size: 17px;
   font-weight: 700;
+}
+
+.setup-count {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+}
+
+.setup-hint,
+.setup-empty {
+  display: block;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.setup-empty {
+  font-size: 14px;
+}
+
+.setup-intro {
+  margin-bottom: 12px;
+}
+
+.setup-outro {
+  margin-top: 12px;
+}
+
+.setup-save {
+  margin-top: 16px;
 }
 
 .count-badge {
@@ -31,10 +67,159 @@
   font-weight: 700;
 }
 
-.access-requests-empty {
+/* Sections that open and close (everything the room admin sets up) */
+
+.setup-toggle-heading {
+  font: inherit;
+}
+
+.setup-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 32px;
+  text-align: left;
+}
+
+.setup-toggle-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+}
+
+.setup-toggle-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.setup-toggle-summary {
+  overflow: hidden;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  animation: fade-in 200ms ease both;
+}
+
+.setup-toggle-warning {
+  color: var(--color-highlight);
+  font-weight: 600;
+}
+
+.setup-toggle-chevron {
+  flex-shrink: 0;
+  color: var(--color-text-tertiary);
+  transition: transform 250ms var(--ease-out);
+}
+
+.setup-collapsible.is-open .setup-toggle-chevron {
+  transform: rotate(180deg);
+}
+
+.setup-collapsible-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 300ms var(--ease-out);
+}
+
+.setup-collapsible.is-open .setup-collapsible-body {
+  grid-template-rows: 1fr;
+}
+
+.setup-collapsible-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.setup-collapsible-content {
+  padding-top: 14px;
+}
+
+/* First in its section, so no gap above. */
+.setup-collapsible-content .vendor-upi-field {
+  margin-top: 0;
+}
+
+/* Room name and links */
+
+.room-info-name {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.room-info-title {
+  margin-top: 2px;
+  font-size: 19px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.room-info-lock {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.room-info .setup-hint {
+  margin-top: 10px;
+}
+
+.share-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+}
+
+.share-link-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.share-link-label {
   font-size: 14px;
+  font-weight: 600;
+}
+
+.share-link-url {
+  overflow: hidden;
+  font-size: 13px;
+  color: var(--color-accent);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.share-link-hint {
+  font-size: 12px;
   color: var(--color-text-secondary);
 }
+
+.share-link .pill-button {
+  flex-shrink: 0;
+  background: var(--color-surface);
+}
+
+/* Join requests */
 
 .access-request-list {
   display: flex;
@@ -128,4 +313,171 @@
   font-size: 14px;
   font-weight: 600;
   animation: rise-in 300ms var(--ease-out) both;
+}
+
+/* Roommates */
+
+.member-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.member-row {
+  padding: 10px 0;
+}
+
+.member-row + .member-row {
+  border-top: 1px solid var(--color-border);
+}
+
+.member-row-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.member-row-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.member-row-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.member-row-meta {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.member-row-note {
+  margin: 6px 0 0 42px;
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+}
+
+.member-tag {
+  padding: 1px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-muted);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.member-confirm {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--color-negative-bg);
+  font-size: 14px;
+  animation: rise-in 240ms var(--ease-out) both;
+}
+
+.member-confirm-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.member-confirm-actions .button {
+  flex: 1;
+  min-height: 42px;
+  font-size: 15px;
+}
+
+.member-confirm .button-secondary {
+  background: var(--color-surface);
+}
+
+/* Meals & prices */
+
+.meal-settings {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+}
+
+.meal-setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 56px;
+  padding: 6px 12px 6px 14px;
+}
+
+.meal-setting + .meal-setting {
+  border-top: 1px solid var(--color-border);
+}
+
+.meal-setting-name {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.meal-setting.is-off .meal-setting-name {
+  color: var(--color-text-secondary);
+}
+
+.price-field {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    opacity 200ms ease;
+}
+
+.price-field:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15);
+}
+
+.meal-setting.is-off .price-field {
+  opacity: 0.45;
+}
+
+.price-input {
+  width: 58px;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 16px;
+  color: var(--color-text);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield;
+}
+
+.price-input:focus {
+  outline: none;
+}
+
+.price-input::-webkit-inner-spin-button,
+.price-input::-webkit-outer-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+.vendor-upi-field {
+  margin-top: 16px;
 }

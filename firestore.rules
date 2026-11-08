@@ -330,6 +330,21 @@ service cloud.firestore {
       allow delete: if isMainAdmin();
     }
 
+    // ---------- Demo visitors: names typed into the demo's welcome popup ----------
+    // The demo has no sign-in, so anyone can add one, but only a short name and
+    // the server's time. Only the main admin can see or clear them (/admin).
+
+    match /demoVisits/{visitId} {
+      allow create: if visitId.matches('^[A-Za-z0-9]{20}$')
+        && request.resource.data.keys().hasOnly(['name', 'visitedAt'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 30
+        && request.resource.data.visitedAt == request.time;
+
+      allow read, delete: if isMainAdmin();
+    }
+
     // ======================================================================
     // The original single-house app (v1): users, roommates, dailyOrders, …
     //

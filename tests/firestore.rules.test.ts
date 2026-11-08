@@ -585,6 +585,37 @@ describe("your rooms (the home page list)", () => {
   });
 });
 
+describe("demo visitors", () => {
+  const visit = (name = "Priya") => ({ name, visitedAt: serverTimestamp() });
+  const visitDoc = (db: Firestore, id = "AbCdEfGhIjKlMnOpQrSt") => doc(db, "demoVisits", id);
+
+  test("the demo notes a visitor's name without signing in", async () => {
+    await assertSucceeds(setDoc(visitDoc(anonymous()), visit()));
+  });
+
+  test("only a short name and the server's time", async () => {
+    await assertFails(setDoc(visitDoc(anonymous()), { ...visit(), email: "x@example.com" }));
+    await assertFails(setDoc(visitDoc(anonymous()), visit("")));
+    await assertFails(setDoc(visitDoc(anonymous()), visit("x".repeat(31))));
+    await assertFails(setDoc(visitDoc(anonymous()), { name: "Priya", visitedAt: past }));
+    await assertFails(setDoc(visitDoc(anonymous(), "short"), visit()));
+  });
+
+  test("a visit can't be changed afterwards", async () => {
+    await setDoc(visitDoc(anonymous()), visit());
+    await assertFails(setDoc(visitDoc(anonymous()), visit("Someone else")));
+  });
+
+  test("only the main admin can see or clear the list", async () => {
+    await setDoc(visitDoc(anonymous()), visit());
+    await assertFails(getDocs(collection(anonymous(), "demoVisits")));
+    await assertFails(getDocs(collection(alice(), "demoVisits")));
+    await assertFails(getDocs(collection(fakeMainAdmin(), "demoVisits")));
+    await assertSucceeds(getDocs(collection(mainAdmin(), "demoVisits")));
+    await assertSucceeds(deleteDoc(visitDoc(mainAdmin())));
+  });
+});
+
 describe("vendor boards", () => {
   test("anyone can read a room's board by its link, without signing in", async () => {
     await assertSucceeds(getDoc(doc(anonymous(), "vendorBoards", ROOM)));

@@ -168,3 +168,8 @@
 .console-confirm-field strong {
   color: var(--color-text);
 }
+
+/* One-line rows (demo visitors). */
+.console-row-compact {
+  padding: 10px 0;
+}

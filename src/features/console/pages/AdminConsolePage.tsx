@@ -4,6 +4,7 @@ import { BrandButton, CoffeeLink } from "@/components/brand";
 import { PATHS } from "@/constants/routes";
 import { AuthCard, SignInGate, useAuth } from "@/features/auth";
 
+import { DemoVisitorList } from "../components/DemoVisitorList";
 import { MoveHouseCard } from "../components/MoveHouseCard";
 import { RoomList } from "../components/RoomList";
 import { RoomRequestList } from "../components/RoomRequestList";
@@ -70,6 +71,8 @@ function Console() {
         </a>
 
         <MoveHouseCard />
+
+        <DemoVisitorList />
 
         <section className="console-section" aria-labelledby="coffee-title">
           <h2 id="coffee-title" className="section-title">

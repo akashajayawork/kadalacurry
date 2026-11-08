@@ -1,4 +1,5 @@
 export type * from "./debt";
+export type * from "./demoVisit";
 export type * from "./joinRequest";
 export type * from "./order";
 export type * from "./room";
